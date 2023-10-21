@@ -1,3 +1,5 @@
+"use client"; // https://github.com/nextui-org/nextui/issues/1403
+
 import NextLink from "next/link";
 import { Link } from "@nextui-org/link";
 import { Snippet } from "@nextui-org/snippet";
@@ -6,8 +8,15 @@ import { button as buttonStyles } from "@nextui-org/theme";
 import { siteConfig } from "@/config/site";
 import { title, subtitle } from "@/components/primitives";
 import { GithubIcon } from "@/components/icons";
+import { V1PartialPremierTeam } from "@/valorant-api";
+import { useState } from "react";
+import { DivisionSelect } from "@/components/division-select";
+import { getPremierConference } from "@/api";
 
 export default function Home() {
+
+  const [divisionTeams, setDivisionTeams] = useState<V1PartialPremierTeam[]>();
+
   return (
     <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
       <div className="inline-block max-w-lg text-center justify-center">
@@ -49,6 +58,13 @@ export default function Home() {
           </span>
         </Snippet>
       </div>
+
+      <h1 className={title()}>Select your Premier division</h1>
+
+      <DivisionSelect onSelect={async ({ conference, division }) => {
+        const teams = await getPremierConference(conference, division);
+        setDivisionTeams(teams);
+      }} />
     </section>
   );
 }
