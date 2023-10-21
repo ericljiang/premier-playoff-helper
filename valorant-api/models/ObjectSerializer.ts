@@ -52,7 +52,7 @@ import { StatusInnerTitlesInner } from '../models/StatusInnerTitlesInner';
 import { StatusInnerUpdatesInner } from '../models/StatusInnerUpdatesInner';
 import { StatusInnerUpdatesInnerTranslationsInner } from '../models/StatusInnerUpdatesInnerTranslationsInner';
 import { Team } from '../models/Team';
-import { TeamRoaster } from '../models/TeamRoaster';
+import { TeamRoster } from '../models/TeamRoaster';
 import { TeamRoasterCustomization } from '../models/TeamRoasterCustomization';
 import { V1Account } from '../models/V1Account';
 import { V1AccountData } from '../models/V1AccountData';
@@ -414,7 +414,7 @@ let typeMap: { [index: string]: any; } = {
     "StatusInnerUpdatesInner": StatusInnerUpdatesInner,
     "StatusInnerUpdatesInnerTranslationsInner": StatusInnerUpdatesInnerTranslationsInner,
     "Team": Team,
-    "TeamRoaster": TeamRoaster,
+    "TeamRoaster": TeamRoster,
     "TeamRoasterCustomization": TeamRoasterCustomization,
     "V1Account": V1Account,
     "V1AccountData": V1AccountData,

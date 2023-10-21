@@ -10,14 +10,14 @@
  * Do not edit the class manually.
  */
 
-import { TeamRoaster } from '../models/TeamRoaster';
+import { TeamRoster } from '../models/TeamRoaster';
 import { HttpFile } from '../http/http';
 
 export class Team {
     'hasWon'?: boolean | null;
     'roundsWon'?: number | null;
     'roundsLost'?: number | null;
-    'roaster'?: TeamRoaster | null;
+    'roster'?: TeamRoster | null;
 
     static readonly discriminator: string | undefined = undefined;
 
@@ -41,9 +41,9 @@ export class Team {
             "format": ""
         },
         {
-            "name": "roaster",
-            "baseName": "roaster",
-            "type": "TeamRoaster",
+            "name": "roster",
+            "baseName": "roster",
+            "type": "TeamRoster",
             "format": ""
         }    ];
 
@@ -54,4 +54,3 @@ export class Team {
     public constructor() {
     }
 }
-

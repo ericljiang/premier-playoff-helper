@@ -13,7 +13,8 @@
 import { TeamRoasterCustomization } from '../models/TeamRoasterCustomization';
 import { HttpFile } from '../http/http';
 
-export class TeamRoaster {
+export class TeamRoster {
+    'id'?: string;
     'members'?: Array<string>;
     'name'?: string;
     'tag'?: string;
@@ -22,6 +23,12 @@ export class TeamRoaster {
     static readonly discriminator: string | undefined = undefined;
 
     static readonly attributeTypeMap: Array<{name: string, baseName: string, type: string, format: string}> = [
+        {
+            "name": "id",
+            "baseName": "id",
+            "type": "string",
+            "format": ""
+        },
         {
             "name": "members",
             "baseName": "members",
@@ -48,10 +55,9 @@ export class TeamRoaster {
         }    ];
 
     static getAttributeTypeMap() {
-        return TeamRoaster.attributeTypeMap;
+        return TeamRoster.attributeTypeMap;
     }
 
     public constructor() {
     }
 }
-

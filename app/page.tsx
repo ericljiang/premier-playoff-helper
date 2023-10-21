@@ -1,17 +1,11 @@
 "use client"; // https://github.com/nextui-org/nextui/issues/1403
 
-import NextLink from "next/link";
-import { Link } from "@nextui-org/link";
-import { Snippet } from "@nextui-org/snippet";
-import { Code } from "@nextui-org/code"
-import { button as buttonStyles } from "@nextui-org/theme";
-import { siteConfig } from "@/config/site";
-import { title, subtitle } from "@/components/primitives";
-import { GithubIcon } from "@/components/icons";
-import { V1PartialPremierTeam } from "@/valorant-api";
+import { title } from "@/components/primitives";
+import { Match, V1PartialPremierTeam } from "@/valorant-api";
 import { useState } from "react";
 import { DivisionSelect } from "@/components/division-select";
-import { getPremierConference } from "@/api";
+import { getPremierConference, getPremierMatches } from "@/api";
+import { TeamSelect } from "@/components/team-select";
 
 export default function Home() {
 
@@ -19,52 +13,61 @@ export default function Home() {
 
   return (
     <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
-      <div className="inline-block max-w-lg text-center justify-center">
-        <h1 className={title()}>Make&nbsp;</h1>
-        <h1 className={title({ color: "violet" })}>beautiful&nbsp;</h1>
-        <br />
-        <h1 className={title()}>
-          websites regardless of your design experience.
-        </h1>
-        <h2 className={subtitle({ class: "mt-4" })}>
-          Beautiful, fast and modern React UI library.
-        </h2>
-      </div>
-
-      <div className="flex gap-3">
-        <Link
-          isExternal
-          as={NextLink}
-          href={siteConfig.links.docs}
-          className={buttonStyles({ color: "primary", radius: "full", variant: "shadow" })}
-        >
-          Documentation
-        </Link>
-        <Link
-          isExternal
-          as={NextLink}
-          className={buttonStyles({ variant: "bordered", radius: "full" })}
-          href={siteConfig.links.github}
-        >
-          <GithubIcon size={20} />
-          GitHub
-        </Link>
-      </div>
-
-      <div className="mt-8">
-        <Snippet hideSymbol hideCopyButton variant="flat">
-          <span>
-            Get started by editing <Code color="primary">app/page.tsx</Code>
-          </span>
-        </Snippet>
-      </div>
-
       <h1 className={title()}>Select your Premier division</h1>
 
       <DivisionSelect onSelect={async ({ conference, division }) => {
         const teams = await getPremierConference(conference, division);
         setDivisionTeams(teams);
       }} />
+
+      {divisionTeams && (
+        <>
+          <h1 className={title()}>Select matchup</h1>
+          <TeamSelect teams={divisionTeams} onSelect={async ({ teamA, teamB }) => {
+            const [teamAMatches, teamBMatches] = await Promise.all([
+              getPremierMatches(teamA),
+              getPremierMatches(teamB)
+            ]);
+            teamAMatches.map(match => getStats(match, teamA));
+            teamBMatches.map(match => getStats(match, teamB));
+          }} />
+        </>
+      )}
     </section>
   );
+}
+
+function getStats(match: Match, teamId: string) {
+  const map = match.metadata?.map!;
+  const teamColor = match.teams?.blue?.roster?.id === teamId ? "blue" : "red";
+
+  const won = match.teams![teamColor]!.hasWon!;
+
+  const roundsWon = match.teams![teamColor]!.roundsWon!;
+  const roundsLost = match.teams![teamColor]!.roundsLost!;
+  const roundWinRate = roundsWon / (roundsWon + roundsLost);
+
+  // assumption - blue team attacks first half
+  const attackRounds = teamColor === "blue" ? match.rounds!.slice(0, 12) : match.rounds!.slice(12);
+  const defenseRounds = teamColor === "red" ? match.rounds!.slice(0, 12) : match.rounds!.slice(12);
+  const attackRoundsWon = attackRounds.filter(round => round.winningTeam?.toLowerCase() === teamColor).length;
+  const defenseRoundsWon = defenseRounds.filter(round => round.winningTeam?.toLowerCase() === teamColor).length;
+  const attackWinRate = attackRoundsWon / attackRounds.length;
+  const defenseWinRate = defenseRoundsWon / defenseRounds.length;
+
+  console.log({
+    map,
+    won,
+    roundWinRate,
+    attackWinRate,
+    defenseWinRate
+  });
+
+  return {
+    map,
+    won,
+    roundWinRate,
+    attackWinRate,
+    defenseWinRate
+  };
 }

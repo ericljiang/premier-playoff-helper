@@ -67,7 +67,7 @@ import { StatusInnerTitlesInner } from '../models/StatusInnerTitlesInner';
 import { StatusInnerUpdatesInner } from '../models/StatusInnerUpdatesInner';
 import { StatusInnerUpdatesInnerTranslationsInner } from '../models/StatusInnerUpdatesInnerTranslationsInner';
 import { Team } from '../models/Team';
-import { TeamRoaster } from '../models/TeamRoaster';
+import { TeamRoster } from '../models/TeamRoaster';
 import { TeamRoasterCustomization } from '../models/TeamRoasterCustomization';
 import { Tiers } from '../models/Tiers';
 import { TiersOld } from '../models/TiersOld';
