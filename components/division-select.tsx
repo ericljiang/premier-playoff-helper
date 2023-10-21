@@ -1,3 +1,4 @@
+"use client"; // https://github.com/nextui-org/nextui/issues/1403
 import { PremierConferences } from "@/valorant-api";
 import { Button } from "@nextui-org/button";
 import { Select, SelectItem } from "@nextui-org/select";

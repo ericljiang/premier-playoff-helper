@@ -54,6 +54,13 @@ export async function getPremierHistory(teamId: string): Promise<V1PremierTeamHi
 export async function getPremierMatches(teamId: string): Promise<Match[]> {
   const premierHistory = await getPremierHistory(teamId);
   return Promise.all(premierHistory.leagueMatches!
+    .slice(0, 14)
     .map(match => match.id)
-    .map(matchId => getMatch(matchId!)));
+    .flatMap(matchId => {
+      try {
+        return [getMatch(matchId!)];
+      } catch {
+        return [];
+      }
+    }));
 }
