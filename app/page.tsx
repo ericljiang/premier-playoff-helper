@@ -7,6 +7,7 @@ import { getPremierConference } from "@/api";
 import { TeamSelect } from "@/components/team-select";
 import { TeamStats } from "@/components/team-stats";
 import { MapStats, getTeamStats } from "@/analysis";
+import { Snippet } from "@nextui-org/snippet";
 
 export default function Home() {
 
@@ -21,6 +22,14 @@ export default function Home() {
 
   return (
     <section className="flex flex-col items-center justify-center gap-4 py-8 md:py-10">
+      <Snippet hideCopyButton hideSymbol color="primary" size="sm">
+        <span>The API used to retrieve Valorant data is</span>
+        <span>rate limited to 30 requests per minute.</span>
+        <span>Computing stats for one matchup can create</span>
+        <span>up to 30 requests. If the page freezes,</span>
+        <span>refresh and try again in a minute.</span>
+      </Snippet>
+
       <h1 className={title()}>Select your Premier division</h1>
 
       <DivisionSelect
