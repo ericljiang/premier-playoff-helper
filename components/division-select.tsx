@@ -1,9 +1,7 @@
 "use client"; // https://github.com/nextui-org/nextui/issues/1403
-import { getPremierConference } from "@/api";
-import { PremierConferences, V1PartialPremierTeam } from "@/valorant-api";
+import { PremierConferences } from "@/valorant-api";
 import { Button } from "@nextui-org/button";
 import { Select, SelectItem } from "@nextui-org/select";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 type Inputs = {

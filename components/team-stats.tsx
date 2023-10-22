@@ -31,7 +31,7 @@ export function TeamStats({ teamStats }: {
         {Array.from(new Set([
           ...teamStats.teamA.keys(),
           ...teamStats.teamB.keys()
-        ])).map((map) => {
+        ])).sort().map((map) => {
           const teamAStats = teamStats.teamA.get(map);
           const teamBStats = teamStats.teamB.get(map);
 
