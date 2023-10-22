@@ -2,6 +2,7 @@
 import { V1PartialPremierTeam } from "@/valorant-api";
 import { Button } from "@nextui-org/button";
 import { Select, SelectItem } from "@nextui-org/select";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 type Inputs = {
@@ -19,7 +20,12 @@ export function TeamSelect({ teams, onSelect }: TeamSelectProps) {
     register,
     handleSubmit,
     formState: { isValid },
+    reset
   } = useForm<Inputs>();
+
+  useEffect(() => {
+    reset()
+  }, [teams, reset])
 
   return (
     <form onSubmit={handleSubmit(onSelect)} className="flex w-full flex-wrap md:flex-nowrap gap-4">
