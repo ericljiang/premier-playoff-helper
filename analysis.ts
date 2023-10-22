@@ -13,9 +13,18 @@ export type MapStats = {
 };
 
 export async function getTeamStats(teamId: string): Promise<Map<Maps, MapStats>> {
-  const teamMatches = await getPremierMatches(teamId);
-  return (await Promise.all(teamMatches.map(match => getStats(match, teamId))))
-    .reduce(reduceStats, new Map<Maps, MapStats>());
+  const storageKey = `getTeamStats:${teamId}`
+  const cached = localStorage.getItem(storageKey)
+  if (cached) {
+    return new Map(JSON.parse(cached))
+  } else {
+    const teamMatches = await getPremierMatches(teamId);
+    const teamStats = (await Promise.all(teamMatches.map(match => getStats(match, teamId))))
+      .reduce(reduceStats, new Map<Maps, MapStats>());
+    // https://stackoverflow.com/a/53461519/6497736
+    localStorage.setItem(storageKey, JSON.stringify(Array.from(teamStats.entries())))
+    return teamStats;
+  }
 }
 
 function getStats(match: Match, teamId: string): MapStats & { map: Maps; } {
