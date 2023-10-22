@@ -13,9 +13,10 @@ type Inputs = {
 export type TeamSelectProps = {
   teams: V1PartialPremierTeam[];
   onSelect: (teams: Inputs) => void;
+  isLoading: boolean
 };
 
-export function TeamSelect({ teams, onSelect }: TeamSelectProps) {
+export function TeamSelect({ teams, onSelect, isLoading }: TeamSelectProps) {
   const {
     register,
     handleSubmit,
@@ -54,9 +55,10 @@ export function TeamSelect({ teams, onSelect }: TeamSelectProps) {
         size="lg"
         color="primary"
         type="submit"
-        isDisabled={!isValid}
+        isDisabled={!isValid || isLoading}
+        isLoading={isLoading}
       >
-        Next
+        {isLoading ? "" : "Next"}
       </Button>
     </form>
   );

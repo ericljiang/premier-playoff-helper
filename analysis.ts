@@ -14,7 +14,7 @@ export type MapStats = {
 
 export async function getTeamStats(teamId: string): Promise<Map<Maps, MapStats>> {
   const teamMatches = await getPremierMatches(teamId);
-  return teamMatches.map(match => getStats(match, teamId))
+  return (await Promise.all(teamMatches.map(match => getStats(match, teamId))))
     .reduce(reduceStats, new Map<Maps, MapStats>());
 }
 

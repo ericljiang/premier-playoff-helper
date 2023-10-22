@@ -10,7 +10,10 @@ import { MapStats, getTeamStats } from "@/analysis";
 
 export default function Home() {
 
+  const [isLoadingTeams, setLoadingTeams] = useState<boolean>(false);
   const [divisionTeams, setDivisionTeams] = useState<V1PartialPremierTeam[]>();
+
+  const [isLoadingStats, setLoadingStats] = useState<boolean>(false);
   const [teamStats, setTeamStats] = useState<{
     teamA: Map<Maps, MapStats>;
     teamB: Map<Maps, MapStats>;
@@ -21,22 +24,32 @@ export default function Home() {
       <h1 className={title()}>Select your Premier division</h1>
 
       <DivisionSelect
-        onSelect={teams => {
+        onSelect={async ({ conference, division }) => {
+          setLoadingTeams(true);
+          const teams = await getPremierConference(conference, division);
+          setLoadingTeams(false);
           setDivisionTeams(teams);
           setTeamStats(undefined);
         }}
+        isLoading={isLoadingTeams}
       />
 
       {divisionTeams && (
         <>
           <h1 className={title()}>Select matchup</h1>
-          <TeamSelect teams={divisionTeams} onSelect={async ({ teamA, teamB }) => {
-            const [teamAStats, teamBStats] = await Promise.all([
-              getTeamStats(teamA),
-              getTeamStats(teamB)
-            ]);
-            setTeamStats({ teamA: teamAStats, teamB: teamBStats })
-          }} />
+          <TeamSelect
+            teams={divisionTeams}
+            onSelect={async ({ teamA, teamB }) => {
+              setLoadingStats(true);
+              const [teamAStats, teamBStats] = await Promise.all([
+                getTeamStats(teamA),
+                getTeamStats(teamB)
+              ]);
+              setLoadingStats(false);
+              setTeamStats({ teamA: teamAStats, teamB: teamBStats })
+            }}
+            isLoading={isLoadingStats}
+          />
         </>
       )}
 

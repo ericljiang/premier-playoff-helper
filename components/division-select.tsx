@@ -12,28 +12,19 @@ type Inputs = {
 };
 
 export type DivisionSelectProps = {
-  onSelect: (teams: V1PartialPremierTeam[]) => void;
+  onSelect: (selection: Inputs) => void;
+  isLoading: boolean
 };
 
-export function DivisionSelect({ onSelect }: DivisionSelectProps) {
+export function DivisionSelect({ onSelect, isLoading }: DivisionSelectProps) {
   const {
     register,
     handleSubmit,
     formState: { isValid },
   } = useForm<Inputs>();
 
-  const [isLoading, setLoading] = useState<boolean>(false);
-
-  async function onSubmit(inputs: Inputs) {
-    const { conference, division } = inputs;
-    setLoading(true);
-    const teams = await getPremierConference(conference, division);
-    setLoading(false);
-    onSelect(teams);
-  }
-
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex w-full flex-wrap md:flex-nowrap gap-4">
+    <form onSubmit={handleSubmit(onSelect)} className="flex w-full flex-wrap md:flex-nowrap gap-4">
       <Select
         label="Conference"
         {...register("conference", { required: true })}
