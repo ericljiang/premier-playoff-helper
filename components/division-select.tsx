@@ -64,7 +64,7 @@ export function DivisionSelect({ onSelect, isLoading }: DivisionSelectProps) {
   } = useForm<Inputs>();
 
   return (
-    <form onSubmit={handleSubmit(onSelect)} className="flex w-full flex-wrap md:flex-nowrap gap-4 items-center">
+    <form onSubmit={handleSubmit(onSelect)} className="flex w-full flex-wrap md:flex-nowrap gap-4 items-center justify-center">
       <Select
         label="Zone"
         {...register("conference", { required: true })}
