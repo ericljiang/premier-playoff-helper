@@ -1,7 +1,9 @@
 "use client"; // https://github.com/nextui-org/nextui/issues/1403
-import { PremierConferences } from "@/valorant-api";
+import { getPremierConference } from "@/api";
+import { PremierConferences, V1PartialPremierTeam } from "@/valorant-api";
 import { Button } from "@nextui-org/button";
 import { Select, SelectItem } from "@nextui-org/select";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 type Inputs = {
@@ -10,7 +12,7 @@ type Inputs = {
 };
 
 export type DivisionSelectProps = {
-  onSelect: (selection: Inputs) => void;
+  onSelect: (teams: V1PartialPremierTeam[]) => void;
 };
 
 export function DivisionSelect({ onSelect }: DivisionSelectProps) {
@@ -20,8 +22,18 @@ export function DivisionSelect({ onSelect }: DivisionSelectProps) {
     formState: { isValid },
   } = useForm<Inputs>();
 
+  const [isLoading, setLoading] = useState<boolean>(false);
+
+  async function onSubmit(inputs: Inputs) {
+    const { conference, division } = inputs;
+    setLoading(true);
+    const teams = await getPremierConference(conference, division);
+    setLoading(false);
+    onSelect(teams);
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSelect)} className="flex w-full flex-wrap md:flex-nowrap gap-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex w-full flex-wrap md:flex-nowrap gap-4">
       <Select
         label="Conference"
         {...register("conference", { required: true })}
@@ -49,9 +61,10 @@ export function DivisionSelect({ onSelect }: DivisionSelectProps) {
         size="lg"
         color="primary"
         type="submit"
-        isDisabled={!isValid}
+        isDisabled={!isValid || isLoading}
+        isLoading={isLoading}
       >
-        Next
+        {isLoading ? "" : "Next"}
       </Button>
     </form>
   );
