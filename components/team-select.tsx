@@ -29,7 +29,7 @@ export function TeamSelect({ teams, onSelect, isLoading }: TeamSelectProps) {
   }, [teams, reset])
 
   return (
-    <form onSubmit={handleSubmit(onSelect)} className="flex w-full flex-wrap md:flex-nowrap gap-4">
+    <form onSubmit={handleSubmit(onSelect)} className="flex w-full flex-wrap md:flex-nowrap gap-4 items-center">
       <Select
         label="Your team"
         {...register("teamA", { required: true })}
@@ -40,7 +40,7 @@ export function TeamSelect({ teams, onSelect, isLoading }: TeamSelectProps) {
           </SelectItem>
         ))}
       </Select>
-      VS
+      vs
       <Select
         label="Opponent team"
         {...register("teamB", { required: true })}
