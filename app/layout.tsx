@@ -32,7 +32,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head />
+      <head>
+        <meta name="darkreader-lock" />
+      </head>
       <body
         className={clsx(
           "min-h-screen bg-background font-sans antialiased",
