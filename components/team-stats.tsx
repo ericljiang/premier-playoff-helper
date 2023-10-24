@@ -9,7 +9,7 @@ export function TeamStats({ teamStats }: {
   };
 }) {
   return (
-    <Table>
+    <Table aria-label="Team stats per map">
       <TableHeader>
         <TableColumn>
           Map
