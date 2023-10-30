@@ -5,7 +5,7 @@ import { useState } from "react";
 import { DivisionSelect } from "@/components/division-select";
 import { getPremierConference } from "@/api";
 import { TeamSelect } from "@/components/team-select";
-import { TeamStats } from "@/components/team-stats";
+import { StatsTable } from "@/components/stats-table";
 import { MapStats, getTeamStats } from "@/analysis";
 import { Snippet } from "@nextui-org/snippet";
 import { Toaster, toast } from "sonner";
@@ -91,7 +91,7 @@ export default function Home() {
         )}
 
         {teamStats && (
-          <TeamStats teamStats={teamStats} />
+          <StatsTable teamStats={teamStats} />
         )}
       </section>
     </>
