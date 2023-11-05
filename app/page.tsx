@@ -47,6 +47,7 @@ export default function Home() {
             try {
               const teams = await getPremierConference(conference, division);
               setDivisionTeams(teams);
+              setExpectedMatches(undefined);
               setTeamAMatches([]);
               setTeamBMatches([]);
             } catch (e) {
