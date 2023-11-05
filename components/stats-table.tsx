@@ -1,5 +1,4 @@
 import { MapStats, estimateWinProbability, reduceStats, winLossRate } from "@/analysis";
-import { Maps } from "@/valorant-api";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 
 type StatsTableProps = {
@@ -8,8 +7,8 @@ type StatsTableProps = {
 };
 
 export function StatsTable({ teamAMatches, teamBMatches }: StatsTableProps) {
-  const teamAStats = teamAMatches.reduce(reduceStats, new Map<Maps, MapStats>());
-  const teamBStats = teamBMatches.reduce(reduceStats, new Map<Maps, MapStats>())
+  const teamAStats = teamAMatches.reduce(reduceStats, new Map<string, MapStats>());
+  const teamBStats = teamBMatches.reduce(reduceStats, new Map<string, MapStats>())
 
   return (
     <>

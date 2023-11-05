@@ -1,9 +1,8 @@
-import { Maps, Match } from "./valorant-api";
-
-const statsCacheExpirationTime = 24 * 60 * 60 * 1000;
+import { getMatch } from "./api";
+import { z } from "zod";
 
 export type MapStats = {
-  map: Maps,
+  map: string,
   won: number,
   lost: number,
   roundsWon: number,
@@ -14,8 +13,59 @@ export type MapStats = {
   defenseRoundsLost: number,
 };
 
+const cachedStatsSchema = z.object({
+  version: z.literal("2023-11-05"),
+  stats: z.object({
+    map: z.string(),
+    won: z.number(),
+    lost: z.number(),
+    roundsWon: z.number(),
+    roundsLost: z.number(),
+    attackRoundsWon: z.number(),
+    attackRoundsLost: z.number(),
+    defenseRoundsWon: z.number(),
+    defenseRoundsLost: z.number(),
+  })
+});
 
-export function getStats(match: Match, teamId: string): MapStats {
+export async function getStats(matchId: string, teamId: string): Promise<MapStats> {
+  const cacheKey = `MapStats:matchId=${matchId}:teamId=${teamId}`;
+  const cached = getCachedStats(cacheKey);
+  if (cached) {
+    return cached;
+  } else {
+    const computed = await computeStats(matchId, teamId);
+    cacheStats(cacheKey, computed);
+    return computed;
+  }
+}
+
+function getCachedStats(key: string): MapStats | undefined {
+  const stored = localStorage.getItem(key);
+  if (!stored) {
+    console.log(`No cached stats for key "${key}"`);
+    return undefined;
+  }
+  console.log(`Found cached stats for key "${key}"`);
+  try {
+    const parsed = cachedStatsSchema.parse(JSON.parse(stored) as unknown);
+    return parsed.stats;
+  } catch {
+    console.error(`Failed to parse cached value "${stored}"`);
+    return undefined;
+  }
+}
+
+function cacheStats(key: string, stats: MapStats): void {
+  const valueToCache: z.infer<typeof cachedStatsSchema> = {
+    version: "2023-11-05",
+    stats
+  };
+  localStorage.setItem(key, JSON.stringify(valueToCache));
+}
+
+async function computeStats(matchId: string, teamId: string): Promise<MapStats> {
+  const match = await getMatch(matchId);
   const map = match.metadata?.map!;
   const teamColor = match.teams?.blue?.roster?.id === teamId ? "blue" : "red";
 
@@ -45,7 +95,7 @@ export function getStats(match: Match, teamId: string): MapStats {
   };
 }
 
-export const reduceStats = (mapStats: Map<Maps, MapStats>, matchStats: MapStats) => {
+export const reduceStats = (mapStats: Map<string, MapStats>, matchStats: MapStats) => {
   const { map } = matchStats;
   if (mapStats.has(map)) {
     const current = mapStats.get(map)!;

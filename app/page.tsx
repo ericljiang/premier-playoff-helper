@@ -80,8 +80,7 @@ export default function Home() {
 
                 async function addMatch(matchId: string, team: "a" | "b"): Promise<void> {
                   try {
-                    const match = await getMatch(matchId);
-                    const stats = getStats(match, team === "a" ? teamA : teamB);
+                    const stats = await getStats(matchId, team === "a" ? teamA : teamB);
                     if (team === "a") {
                       setTeamAMatches(prev => [...prev, stats]);
                     } else {
