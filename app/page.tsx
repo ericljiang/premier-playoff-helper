@@ -66,7 +66,7 @@ export default function Home() {
           <>
             <h1 className={title()}>Select matchup</h1>
             <TeamSelect
-              teams={divisionTeams}
+              teams={divisionTeams.toSorted((a, b) => a.name! > b.name! ? 1 : -1)}
               onSelect={async ({ teamA, teamB }) => {
                 setLoadingStats(true);
                 setExpectedMatches(undefined);
