@@ -1,28 +1,27 @@
 "use client";
 import { title } from "@/components/primitives";
-import { Maps, V1PartialPremierTeam } from "@/valorant-api";
+import { V1PartialPremierTeam } from "@/valorant-api";
 import { useState } from "react";
 import { DivisionSelect } from "@/components/division-select";
-import { getPremierConference } from "@/api";
+import { getMatch, getPremierConference, getPremierMatchHistory } from "@/api";
 import { TeamSelect } from "@/components/team-select";
 import { StatsTable } from "@/components/stats-table";
-import { MapStats, getTeamStats } from "@/analysis";
+import { MapStats, getStats } from "@/analysis";
 import { Snippet } from "@nextui-org/snippet";
 import { Toaster, toast } from "sonner";
 import { useTheme } from "next-themes";
 import he from "he";
+import { Progress } from "@nextui-org/progress";
 
 export default function Home() {
   const { theme } = useTheme()
 
   const [isLoadingTeams, setLoadingTeams] = useState<boolean>(false);
   const [divisionTeams, setDivisionTeams] = useState<V1PartialPremierTeam[]>();
-
   const [isLoadingStats, setLoadingStats] = useState<boolean>(false);
-  const [teamStats, setTeamStats] = useState<{
-    teamA: Map<Maps, MapStats>;
-    teamB: Map<Maps, MapStats>;
-  }>();
+  const [expectedMatches, setExpectedMatches] = useState<number>();
+  const [teamAMatches, setTeamAMatches] = useState<ReadonlyArray<MapStats>>([]);
+  const [teamBMatches, setTeamBMatches] = useState<ReadonlyArray<MapStats>>([]);
 
   return (
     <>
@@ -48,7 +47,8 @@ export default function Home() {
             try {
               const teams = await getPremierConference(conference, division);
               setDivisionTeams(teams);
-              setTeamStats(undefined);
+              setTeamAMatches([]);
+              setTeamBMatches([]);
             } catch (e) {
               console.error(e);
               if (e && typeof e === "object" && "toString" in e) {
@@ -69,20 +69,35 @@ export default function Home() {
               teams={divisionTeams}
               onSelect={async ({ teamA, teamB }) => {
                 setLoadingStats(true);
-                try {
-                  const [teamAStats, teamBStats] = await Promise.all([
-                    getTeamStats(teamA),
-                    getTeamStats(teamB)
-                  ]);
-                  setTeamStats({ teamA: teamAStats, teamB: teamBStats });
-                } catch (e) {
-                  console.error(e);
-                  if (e && typeof e === "object" && "toString" in e) {
-                    toast.error(he.decode(e.toString()), { duration: 10000 });
-                  } else {
-                    toast.error("Failed to load team stats.");
+                setExpectedMatches(undefined);
+                setTeamAMatches([]);
+                setTeamBMatches([]);
+
+                const teamAMatchHistory = await getPremierMatchHistory(teamA);
+                const teamBMatchHistory = await getPremierMatchHistory(teamB);
+                setExpectedMatches(teamAMatchHistory.length + teamBMatchHistory.length);
+
+                async function addMatch(matchId: string, team: "a" | "b"): Promise<void> {
+                  try {
+                    const match = await getMatch(matchId);
+                    const stats = getStats(match, team === "a" ? teamA : teamB);
+                    if (team === "a") {
+                      setTeamAMatches(prev => [...prev, stats]);
+                    } else {
+                      setTeamBMatches(prev => [...prev, stats]);
+                    }
+                  } catch (e) {
+                    if (e && typeof e === "object" && "code" in e && e.code === 429) {
+                      await new Promise(resolve => setTimeout(resolve, 9000 + Math.random() * 2000));
+                      await addMatch(matchId, team);
+                    }
                   }
                 }
+
+                await Promise.all([
+                  ...teamAMatchHistory.map(matchId => addMatch(matchId, "a")),
+                  ...teamBMatchHistory.map(matchId => addMatch(matchId, "b"))
+                ]);
                 setLoadingStats(false);
               }}
               isLoading={isLoadingStats}
@@ -90,8 +105,16 @@ export default function Home() {
           </>
         )}
 
-        {teamStats && (
-          <StatsTable teamStats={teamStats} />
+        {expectedMatches &&
+          <Progress
+            value={teamAMatches.length + teamBMatches.length}
+            maxValue={expectedMatches}
+            label={`Retrieved ${teamAMatches.length + teamBMatches.length}/${expectedMatches ?? "?"} matches`}
+          />
+        }
+
+        {(teamAMatches.length > 0 || teamBMatches.length > 0) && (
+          <StatsTable teamAMatches={teamAMatches} teamBMatches={teamBMatches} />
         )}
       </section>
     </>

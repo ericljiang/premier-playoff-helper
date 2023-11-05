@@ -7,7 +7,13 @@ const matchCache = new Map<string, Match>();
 
 export async function getMatch(matchId: string): Promise<Match> {
   if (!matchCache.has(matchId)) {
-    matchCache.set(matchId, (await api.valorantV2MatchMatchIdGet(matchId)).data!);
+    try {
+      const response = await api.valorantV2MatchMatchIdGet(matchId);
+      matchCache.set(matchId, response.data!);
+    } catch (e) {
+      console.log(JSON.stringify(e));
+      throw e;
+    }
   }
   return matchCache.get(matchId)!;
 }
@@ -51,6 +57,14 @@ export async function getPremierHistory(teamId: string): Promise<V1PremierTeamHi
   return response.data;
 }
 
+export async function getPremierMatchHistory(teamId: string): Promise<string[]> {
+  const response = await api.valorantV1PremierTeamIdHistoryGet(teamId);
+  if (response.status !== 200 || !response.data || !response.data.leagueMatches) {
+    throw Error();
+  }
+  return response.data.leagueMatches.map(match => match.id).filter(isDefined);
+}
+
 export async function getPremierMatches(teamId: string): Promise<Match[]> {
   const premierHistory = await getPremierHistory(teamId);
   return Promise.all(premierHistory.leagueMatches!
@@ -63,4 +77,8 @@ export async function getPremierMatches(teamId: string): Promise<Match[]> {
         return [];
       }
     }));
+}
+
+function isDefined<T>(x: T): x is Exclude<T, undefined> {
+  return x !== undefined;
 }

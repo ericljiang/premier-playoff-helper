@@ -4,6 +4,7 @@ import { Maps, Match } from "./valorant-api";
 const statsCacheExpirationTime = 24 * 60 * 60 * 1000;
 
 export type MapStats = {
+  map: Maps,
   won: number,
   lost: number,
   roundsWon: number,
@@ -55,7 +56,7 @@ function getCachedStats(teamId: string): Map<Maps, MapStats> | undefined {
   return undefined;
 }
 
-function getStats(match: Match, teamId: string): MapStats & { map: Maps; } {
+export function getStats(match: Match, teamId: string): MapStats {
   const map = match.metadata?.map!;
   const teamColor = match.teams?.blue?.roster?.id === teamId ? "blue" : "red";
 
@@ -85,11 +86,12 @@ function getStats(match: Match, teamId: string): MapStats & { map: Maps; } {
   };
 }
 
-const reduceStats = (mapStats: Map<Maps, MapStats>, matchStats: MapStats & { map: Maps; }) => {
+export const reduceStats = (mapStats: Map<Maps, MapStats>, matchStats: MapStats) => {
   const { map } = matchStats;
   if (mapStats.has(map)) {
     const current = mapStats.get(map)!;
     mapStats.set(map, {
+      map,
       won: current.won + matchStats.won,
       lost: current.lost + matchStats.lost,
       roundsWon: current.roundsWon + matchStats.roundsWon,
