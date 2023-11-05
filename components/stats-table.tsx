@@ -1,4 +1,4 @@
-import { MapStats, reduceStats } from "@/analysis";
+import { MapStats, estimateWinProbability, reduceStats, winLossRate } from "@/analysis";
 import { Maps } from "@/valorant-api";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 
@@ -49,10 +49,6 @@ export function StatsTable({ teamAMatches, teamBMatches }: StatsTableProps) {
               return `${(n * 100).toFixed(0)}%`;
             }
 
-            function winLossRate(wins: number, losses: number): number {
-              return wins / (wins + losses);
-            }
-
             function renderWinRateComparison(
               winStat: (mapStats: MapStats) => number,
               loseStat: (mapStats: MapStats) => number
@@ -60,77 +56,6 @@ export function StatsTable({ teamAMatches, teamBMatches }: StatsTableProps) {
               const statA = teamAMapStats === undefined ? "--%" : renderPercentage(winLossRate(winStat(teamAMapStats), loseStat(teamAMapStats)));
               const statB = teamBMapStats === undefined ? "--%" : renderPercentage(winLossRate(winStat(teamBMapStats), loseStat(teamBMapStats)));
               return `${statA}\xA0/\xA0${statB}`;
-            }
-
-            function estimateWinProbabilityByOpposingWinRates(
-              winRateA: number,
-              winRateB: number
-            ): number {
-              return (winRateA + 1 - winRateB) / 2;
-            }
-
-            function weightedAverage(weightedEntries: [number, number][]): number {
-              const [weightedSum, sumOfWeights] = weightedEntries
-                .reduce(([weightedSum, sumOfWeights], [n, w]) =>
-                  [weightedSum + w * n, sumOfWeights + w], [0, 0]);
-              return weightedSum / sumOfWeights;
-            }
-
-            function doTimes<T>(n: number, action: () => T): T[] {
-              return Array.from(Array(n)).map(action);
-            }
-
-            function estimateWinProbability(teamAStats: MapStats, teamBStats: MapStats): number {
-              const winProbabilityByMatchWinRate = estimateWinProbabilityByOpposingWinRates(
-                winLossRate(teamAStats.won, teamAStats.lost),
-                winLossRate(teamBStats.won, teamBStats.lost)
-              );
-              const winProbabilityByRoundWinRate = estimateWinProbabilityByOpposingWinRates(
-                winLossRate(teamAStats.roundsWon, teamAStats.roundsLost),
-                winLossRate(teamBStats.roundsWon, teamBStats.roundsLost)
-              );
-
-              const attackWinRateA = winLossRate(teamAStats.attackRoundsWon, teamAStats.attackRoundsLost);
-              const attackWinRateB = winLossRate(teamBStats.attackRoundsWon, teamBStats.attackRoundsLost);
-              const defenseWinRateA = winLossRate(teamAStats.defenseRoundsWon, teamAStats.defenseRoundsLost);
-              const defenseWinRateB = winLossRate(teamBStats.defenseRoundsWon, teamBStats.defenseRoundsLost);
-              const attackWinProbability = estimateWinProbabilityByOpposingWinRates(attackWinRateA, defenseWinRateB);
-              const defenseWinProbability = estimateWinProbabilityByOpposingWinRates(defenseWinRateA, attackWinRateB);
-
-              function simulateMatch(attackWinProbability: number, defenseWinProbability: number, attackFirst: boolean): boolean {
-                let roundsWon = 0;
-                let roundsLost = 0;
-                let attacking = attackFirst;
-                while (roundsWon < 13 && roundsLost < 13) {
-                  const winProbability = attacking ? attackWinProbability : defenseWinProbability;
-                  if (Math.random() < winProbability) {
-                    roundsWon++;
-                  } else {
-                    roundsLost++;
-                  }
-                  if (roundsWon + roundsLost === 12) {
-                    attacking = !attacking;
-                  }
-                }
-                return roundsWon === 13;
-              }
-
-              const simulationIterations = 100000;
-              const winProbabilityAtk = doTimes(
-                simulationIterations,
-                () => simulateMatch(attackWinProbability, defenseWinProbability, true)
-              ).filter(x => x).length / simulationIterations;
-              const winProbabilityDef = doTimes(
-                simulationIterations,
-                () => simulateMatch(attackWinProbability, defenseWinProbability, false)
-              ).filter(x => x).length / simulationIterations;
-
-              return weightedAverage([
-                [winProbabilityByMatchWinRate, 1],
-                [winProbabilityByRoundWinRate, 1],
-                [winProbabilityAtk, 0.5],
-                [winProbabilityDef, 0.5],
-              ]);
             }
 
             return (
