@@ -11,7 +11,7 @@ import { Snippet } from "@nextui-org/snippet";
 import { Toaster, toast } from "sonner";
 import { useTheme } from "next-themes";
 import he from "he";
-import { Progress } from "@nextui-org/progress";
+import { MatchLoadingProgress } from "@/components/match-loading-progress";
 
 export default function Home() {
   const { theme } = useTheme()
@@ -20,6 +20,7 @@ export default function Home() {
   const [divisionTeams, setDivisionTeams] = useState<V1PartialPremierTeam[]>();
   const [isLoadingStats, setLoadingStats] = useState<boolean>(false);
   const [expectedMatches, setExpectedMatches] = useState<number>();
+  const [unretrievableMatches, setUnretrievableMatches] = useState<number>();
   const [teamAMatches, setTeamAMatches] = useState<ReadonlyArray<MapStats>>([]);
   const [teamBMatches, setTeamBMatches] = useState<ReadonlyArray<MapStats>>([]);
 
@@ -77,6 +78,7 @@ export default function Home() {
                 const teamAMatchHistory = await getPremierMatchHistory(teamA);
                 const teamBMatchHistory = await getPremierMatchHistory(teamB);
                 setExpectedMatches(teamAMatchHistory.length + teamBMatchHistory.length);
+                setUnretrievableMatches(0)
 
                 async function addMatch(matchId: string, team: "a" | "b"): Promise<void> {
                   try {
@@ -91,6 +93,9 @@ export default function Home() {
                     if (e && typeof e === "object" && "code" in e && e.code === 429) {
                       await new Promise(resolve => setTimeout(resolve, 9000 + Math.random() * 2000));
                       await addMatch(matchId, team);
+                    } else {
+                      setUnretrievableMatches(prev => (prev ?? 0) + 1);
+                      console.warn(e);
                     }
                   }
                 }
@@ -106,13 +111,13 @@ export default function Home() {
           </>
         )}
 
-        {expectedMatches &&
-          <Progress
-            value={teamAMatches.length + teamBMatches.length}
-            maxValue={expectedMatches}
-            label={`Retrieved ${teamAMatches.length + teamBMatches.length}/${expectedMatches ?? "?"} matches`}
+        {expectedMatches && (
+          <MatchLoadingProgress
+            loaded={teamAMatches.length + teamBMatches.length}
+            expected={expectedMatches}
+            errors={unretrievableMatches ?? 0}
           />
-        }
+        )}
 
         {(teamAMatches.length > 0 || teamBMatches.length > 0) && (
           <StatsTable teamAMatches={teamAMatches} teamBMatches={teamBMatches} />
