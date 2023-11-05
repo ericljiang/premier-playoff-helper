@@ -7,13 +7,8 @@ const matchCache = new Map<string, Match>();
 
 export async function getMatch(matchId: string): Promise<Match> {
   if (!matchCache.has(matchId)) {
-    try {
-      const response = await api.valorantV2MatchMatchIdGet(matchId);
-      matchCache.set(matchId, response.data!);
-    } catch (e) {
-      console.log(JSON.stringify(e));
-      throw e;
-    }
+    const response = await api.valorantV2MatchMatchIdGet(matchId);
+    matchCache.set(matchId, response.data!);
   }
   return matchCache.get(matchId)!;
 }

@@ -35,9 +35,7 @@ export default function Home() {
         <Snippet hideCopyButton hideSymbol color="primary" size="sm">
           <span>The API used to retrieve Valorant data is</span>
           <span>rate limited to 30 requests per minute.</span>
-          <span>Computing stats for one matchup can create</span>
-          <span>up to 30 requests. If the page freezes,</span>
-          <span>refresh and try again in a minute.</span>
+          <span>Loading matchups may be slow.</span>
         </Snippet>
 
         <h1 className={title()}>Select your Premier division</h1>
