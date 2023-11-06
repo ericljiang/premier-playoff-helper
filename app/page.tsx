@@ -66,15 +66,17 @@ export default function Home() {
           <>
             <h1 className={title()}>Select matchup</h1>
             <TeamSelect
-              teams={divisionTeams.toSorted((a, b) => a.name! > b.name! ? 1 : -1)}
+              teams={divisionTeams.sort((a, b) => a.name! > b.name! ? 1 : -1)}
               onSelect={async ({ teamA, teamB }) => {
                 setLoadingStats(true);
                 setExpectedMatches(undefined);
                 setTeamAMatches([]);
                 setTeamBMatches([]);
 
-                const teamAMatchHistory = await getPremierMatchHistory(teamA);
-                const teamBMatchHistory = await getPremierMatchHistory(teamB);
+                const teamAMatchHistoryPromise = getPremierMatchHistory(teamA);
+                const teamBMatchHistoryPromise = getPremierMatchHistory(teamB);
+                const teamAMatchHistory = await teamAMatchHistoryPromise;
+                const teamBMatchHistory = await teamBMatchHistoryPromise;
                 setExpectedMatches(teamAMatchHistory.length + teamBMatchHistory.length);
                 setUnretrievableMatches(0)
 
