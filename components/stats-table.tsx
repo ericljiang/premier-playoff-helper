@@ -1,8 +1,10 @@
 import { AggregatedMapStats, MapStats, estimateWinProbability, reduceStats, winLossRate } from "@/analysis";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import { Avatar } from "@nextui-org/avatar";
+import { Tab, Tabs } from "@nextui-org/tabs";
 import { useState } from "react";
 import { agentIcons } from "@/agent-icons.json"
+import { z } from "zod";
 
 type StatsTableProps = {
   teamAMatches: ReadonlyArray<MapStats>;
@@ -121,34 +123,78 @@ export function StatsTable({ teamAMatches, teamBMatches }: StatsTableProps) {
           })}
         </TableBody>
       </Table>
-      <Table aria-label="Table of most common team compositions">
-        <TableHeader>
-          <TableColumn>Team composition</TableColumn>
-          <TableColumn>Frequency</TableColumn>
-        </TableHeader>
-        <TableBody emptyContent="No data">
-          {Array.from(teamCompositions?.entries() ?? [])
-            .sort(([, a], [, b]) => b - a)
-            .map(([comp, n], index) =>
-              <TableRow key={index}>
-                <TableCell className="flex gap-3 items-center">
-                  {(JSON.parse(comp) as string[]).map(agent =>
-                    <Avatar
-                      key={agent}
-                      name={agent}
-                      showFallback
-                      radius="sm"
-                      src={agentIcons.find(e => e.displayName === agent)?.displayIcon}
-                    />
+      <div className="flex w-full flex-col">
+        <Tabs disableAnimation>
+          <Tab key="individual" title="Individual">
+            <Table aria-label="Table of most common agents">
+              <TableHeader>
+                <TableColumn>Agent</TableColumn>
+                <TableColumn>Frequency</TableColumn>
+              </TableHeader>
+              <TableBody emptyContent="No data">
+                {Array.from(Array.from(teamCompositions?.entries() ?? [])
+                  .flatMap(([comp, n]) => {
+                    const agents = z.array(z.string()).parse(JSON.parse(comp))
+                    return agents.map(agent => [agent, n] as const)
+                  })
+                  .reduce((agentCounts, [agent, n]) => {
+                    const sum = agentCounts.get(agent)
+                    agentCounts.set(agent, sum ? sum + n : n)
+                    return agentCounts;
+                  }, new Map<string, number>())
+                  .entries()
+                ).sort(([, a], [, b]) => b - a).map(([agent, n]) =>
+                  <TableRow key={agent}>
+                    <TableCell className="flex gap-3 items-center">
+                      <Avatar
+                        key={agent}
+                        name={agent}
+                        showFallback
+                        radius="sm"
+                        src={agentIcons.find(e => e.displayName === agent)?.displayIcon}
+                      />
+                      {agent}
+                    </TableCell>
+                    <TableCell>
+                      {renderPercentage(n / teamBMatches.filter(m => selectedMap ? m.map === selectedMap : true).length)}
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </Tab>
+          <Tab key="team" title="Team">
+            <Table aria-label="Table of most common team compositions">
+              <TableHeader>
+                <TableColumn>Team composition</TableColumn>
+                <TableColumn>Frequency</TableColumn>
+              </TableHeader>
+              <TableBody emptyContent="No data">
+                {Array.from(teamCompositions?.entries() ?? [])
+                  .sort(([, a], [, b]) => b - a)
+                  .map(([comp, n], index) =>
+                    <TableRow key={index}>
+                      <TableCell className="flex gap-3 items-center">
+                        {z.array(z.string()).parse(JSON.parse(comp)).map(agent =>
+                          <Avatar
+                            key={agent}
+                            name={agent}
+                            showFallback
+                            radius="sm"
+                            src={agentIcons.find(e => e.displayName === agent)?.displayIcon}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {renderPercentage(n / teamBMatches.filter(m => selectedMap ? m.map === selectedMap : true).length)}
+                      </TableCell>
+                    </TableRow>
                   )}
-                </TableCell>
-                <TableCell>
-                  {renderPercentage(n / teamBMatches.filter(m => selectedMap ? m.map === selectedMap : true).length)}
-                </TableCell>
-              </TableRow>
-            )}
-        </TableBody>
-      </Table>
+              </TableBody>
+            </Table>
+          </Tab>
+        </Tabs>
+      </div>
     </>
   );
 }
