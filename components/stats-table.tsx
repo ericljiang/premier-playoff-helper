@@ -2,6 +2,7 @@ import { AggregatedMapStats, MapStats, estimateWinProbability, reduceStats, winL
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import { Avatar } from "@nextui-org/avatar";
 import { useState } from "react";
+import { agentIcons } from "@/agent-icons.json"
 
 type StatsTableProps = {
   teamAMatches: ReadonlyArray<MapStats>;
@@ -20,6 +21,20 @@ export function StatsTable({ teamAMatches, teamBMatches }: StatsTableProps) {
 
   const teamAStats = teamAMatches.reduce(reduceStats, new Map<string, AggregatedMapStats>());
   const teamBStats = teamBMatches.reduce(reduceStats, new Map<string, AggregatedMapStats>())
+
+  const teamCompositions = selectedMap
+    ? teamBStats.get(selectedMap)?.teamComposition
+    : Array.from(teamBStats.entries())
+      .flatMap(([, aggregatedStats]) => Array.from(aggregatedStats.teamComposition.entries()))
+      .reduce((agg, [comp, n]) => {
+        const sum = agg.get(comp)
+        if (sum) {
+          agg.set(comp, sum + n)
+        } else {
+          agg.set(comp, n)
+        }
+        return agg;
+      }, new Map<string, number>())
 
   return (
     <>
@@ -106,34 +121,34 @@ export function StatsTable({ teamAMatches, teamBMatches }: StatsTableProps) {
           })}
         </TableBody>
       </Table>
-      {selectedMap && (
-        <Table aria-label="Table of most common team compositions">
-          <TableHeader>
-            <TableColumn>Team composition</TableColumn>
-            <TableColumn>Frequency</TableColumn>
-          </TableHeader>
-          <TableBody>
-            {Array.from(teamBStats.get(selectedMap)!.teamComposition.entries())
-              .map(([comp, n], index) =>
-                <TableRow key={index}>
-                  <TableCell className="flex gap-3 items-center">
-                    {comp.map(agent =>
-                      <Avatar
-                        key={agent}
-                        name={agent}
-                        showFallback
-                        radius="sm"
-                      />
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {renderPercentage(n / teamBMatches.filter(m => m.map === selectedMap).length)}
-                  </TableCell>
-                </TableRow>
-              )}
-          </TableBody>
-        </Table>
-      )}
+      <Table aria-label="Table of most common team compositions">
+        <TableHeader>
+          <TableColumn>Team composition</TableColumn>
+          <TableColumn>Frequency</TableColumn>
+        </TableHeader>
+        <TableBody emptyContent="No data">
+          {Array.from(teamCompositions?.entries() ?? [])
+            .sort(([, a], [, b]) => b - a)
+            .map(([comp, n], index) =>
+              <TableRow key={index}>
+                <TableCell className="flex gap-3 items-center">
+                  {(JSON.parse(comp) as string[]).map(agent =>
+                    <Avatar
+                      key={agent}
+                      name={agent}
+                      showFallback
+                      radius="sm"
+                      src={agentIcons.find(e => e.displayName === agent)?.displayIcon}
+                    />
+                  )}
+                </TableCell>
+                <TableCell>
+                  {renderPercentage(n / teamBMatches.filter(m => selectedMap ? m.map === selectedMap : true).length)}
+                </TableCell>
+              </TableRow>
+            )}
+        </TableBody>
+      </Table>
     </>
   );
 }
