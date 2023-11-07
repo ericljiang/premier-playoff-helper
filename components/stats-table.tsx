@@ -1,18 +1,41 @@
-import { MapStats, estimateWinProbability, reduceStats, winLossRate } from "@/analysis";
+import { AggregatedMapStats, MapStats, estimateWinProbability, reduceStats, winLossRate } from "@/analysis";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
+import { Avatar } from "@nextui-org/avatar";
+import { useState } from "react";
 
 type StatsTableProps = {
   teamAMatches: ReadonlyArray<MapStats>;
   teamBMatches: ReadonlyArray<MapStats>;
 };
 
+function renderPercentage(n: number | undefined): string {
+  if (n === undefined || isNaN(n)) {
+    return "--%";
+  }
+  return `${(n * 100).toFixed(0)}%`;
+}
+
 export function StatsTable({ teamAMatches, teamBMatches }: StatsTableProps) {
-  const teamAStats = teamAMatches.reduce(reduceStats, new Map<string, MapStats>());
-  const teamBStats = teamBMatches.reduce(reduceStats, new Map<string, MapStats>())
+  const [selectedMap, setSelectedMap] = useState<string>();
+
+  const teamAStats = teamAMatches.reduce(reduceStats, new Map<string, AggregatedMapStats>());
+  const teamBStats = teamBMatches.reduce(reduceStats, new Map<string, AggregatedMapStats>())
 
   return (
     <>
-      <Table aria-label="Team stats per map">
+      <Table
+        aria-label="Team stats per map"
+        selectionMode="single"
+        color="primary"
+        onSelectionChange={(keys) => {
+          if (keys !== "all") {
+            const lastKey = [...keys].pop();
+            if (typeof lastKey !== "number") {
+              setSelectedMap(lastKey);
+            }
+          }
+        }}
+      >
         <TableHeader>
           <TableColumn>
             Map
@@ -41,16 +64,9 @@ export function StatsTable({ teamAMatches, teamBMatches }: StatsTableProps) {
             const teamAMapStats = teamAStats.get(map);
             const teamBMapStats = teamBStats.get(map);
 
-            function renderPercentage(n: number | undefined): string {
-              if (n === undefined || isNaN(n)) {
-                return "--%";
-              }
-              return `${(n * 100).toFixed(0)}%`;
-            }
-
             function renderWinRateComparison(
-              winStat: (mapStats: MapStats) => number,
-              loseStat: (mapStats: MapStats) => number
+              winStat: (mapStats: AggregatedMapStats) => number,
+              loseStat: (mapStats: AggregatedMapStats) => number
             ): string {
               const statA = teamAMapStats === undefined ? "--%" : renderPercentage(winLossRate(winStat(teamAMapStats), loseStat(teamAMapStats)));
               const statB = teamBMapStats === undefined ? "--%" : renderPercentage(winLossRate(winStat(teamBMapStats), loseStat(teamBMapStats)));
@@ -90,6 +106,34 @@ export function StatsTable({ teamAMatches, teamBMatches }: StatsTableProps) {
           })}
         </TableBody>
       </Table>
+      {selectedMap && (
+        <Table aria-label="Table of most common team compositions">
+          <TableHeader>
+            <TableColumn>Team composition</TableColumn>
+            <TableColumn>Frequency</TableColumn>
+          </TableHeader>
+          <TableBody>
+            {Array.from(teamBStats.get(selectedMap)!.teamComposition.entries())
+              .map(([comp, n], index) =>
+                <TableRow key={index}>
+                  <TableCell className="flex gap-3 items-center">
+                    {comp.map(agent =>
+                      <Avatar
+                        key={agent}
+                        name={agent}
+                        showFallback
+                        radius="sm"
+                      />
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {renderPercentage(n / teamBMatches.filter(m => m.map === selectedMap).length)}
+                  </TableCell>
+                </TableRow>
+              )}
+          </TableBody>
+        </Table>
+      )}
     </>
   );
 }

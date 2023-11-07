@@ -2,19 +2,24 @@ import { getMatch } from "./api";
 import { z } from "zod";
 
 export type MapStats = {
-  map: string,
-  won: number,
-  lost: number,
-  roundsWon: number,
-  roundsLost: number,
-  attackRoundsWon: number,
-  attackRoundsLost: number,
-  defenseRoundsWon: number,
-  defenseRoundsLost: number,
+  map: string;
+  won: number;
+  lost: number;
+  roundsWon: number;
+  roundsLost: number;
+  attackRoundsWon: number;
+  attackRoundsLost: number;
+  defenseRoundsWon: number;
+  defenseRoundsLost: number;
+  teamComposition: string[];
 };
 
+export type AggregatedMapStats = Omit<MapStats, "teamComposition"> & {
+  teamComposition: Map<string[], number>;
+}
+
 const cachedStatsSchema = z.object({
-  version: z.literal("2023-11-05"),
+  version: z.literal("2023-11-06"),
   stats: z.object({
     map: z.string(),
     won: z.number(),
@@ -25,6 +30,7 @@ const cachedStatsSchema = z.object({
     attackRoundsLost: z.number(),
     defenseRoundsWon: z.number(),
     defenseRoundsLost: z.number(),
+    teamComposition: z.array(z.string())
   })
 });
 
@@ -58,7 +64,7 @@ function getCachedStats(key: string): MapStats | undefined {
 
 function cacheStats(key: string, stats: MapStats): void {
   const valueToCache: z.infer<typeof cachedStatsSchema> = {
-    version: "2023-11-05",
+    version: "2023-11-06",
     stats
   };
   localStorage.setItem(key, JSON.stringify(valueToCache));
@@ -82,6 +88,8 @@ async function computeStats(matchId: string, teamId: string): Promise<MapStats> 
   const defenseRoundsWon = defenseRounds.filter(round => round.winningTeam?.toLowerCase() === teamColor).length;
   const defenseRoundsLost = defenseRounds.length - defenseRoundsWon;
 
+  const teamComposition = match.players![teamColor]!.map(p => p.character!).sort();
+
   return {
     map,
     won,
@@ -91,11 +99,12 @@ async function computeStats(matchId: string, teamId: string): Promise<MapStats> 
     attackRoundsWon,
     attackRoundsLost,
     defenseRoundsWon,
-    defenseRoundsLost
+    defenseRoundsLost,
+    teamComposition
   };
 }
 
-export const reduceStats = (mapStats: Map<string, MapStats>, matchStats: MapStats) => {
+export const reduceStats = (mapStats: Map<string, AggregatedMapStats>, matchStats: MapStats): Map<string, AggregatedMapStats> => {
   const { map } = matchStats;
   if (mapStats.has(map)) {
     const current = mapStats.get(map)!;
@@ -108,10 +117,14 @@ export const reduceStats = (mapStats: Map<string, MapStats>, matchStats: MapStat
       attackRoundsWon: current.attackRoundsWon + matchStats.attackRoundsWon,
       attackRoundsLost: current.attackRoundsLost + matchStats.attackRoundsLost,
       defenseRoundsWon: current.defenseRoundsWon + matchStats.defenseRoundsWon,
-      defenseRoundsLost: current.defenseRoundsLost + matchStats.defenseRoundsLost
+      defenseRoundsLost: current.defenseRoundsLost + matchStats.defenseRoundsLost,
+      teamComposition: current.teamComposition.set(matchStats.teamComposition, (current.teamComposition.get(matchStats.teamComposition) ?? 0) + 1)
     });
   } else {
-    mapStats.set(map, matchStats);
+    mapStats.set(map, {
+      ...matchStats,
+      teamComposition: new Map<string[], number>().set(matchStats.teamComposition, 1)
+    });
   }
   return mapStats;
 };
@@ -120,7 +133,7 @@ export function winLossRate(wins: number, losses: number): number {
   return wins / (wins + losses);
 }
 
-export function estimateWinProbability(teamAStats: MapStats, teamBStats: MapStats): number {
+export function estimateWinProbability(teamAStats: AggregatedMapStats, teamBStats: AggregatedMapStats): number {
   const winProbabilityByMatchWinRate = estimateWinProbabilityByOpposingWinRates(
     winLossRate(teamAStats.won, teamAStats.lost),
     winLossRate(teamBStats.won, teamBStats.lost)
