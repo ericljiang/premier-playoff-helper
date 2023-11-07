@@ -124,6 +124,7 @@ export function StatsTable({ teamAMatches, teamBMatches }: StatsTableProps) {
         </TableBody>
       </Table>
       <div className="flex w-full flex-col">
+        {/* https://github.com/nextui-org/nextui/issues/1467#issuecomment-1695747288 */}
         <Tabs disableAnimation>
           <Tab key="individual" title="Individual">
             <Table aria-label="Table of most common agents">
