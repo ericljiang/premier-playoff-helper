@@ -1,21 +1,21 @@
-import { AggregatedMapStats, MapStats, reduceStats } from "@/analysis";
+import { MapStats, MatchStats, reduceStats } from "@/analysis";
 import { useMemo, useState } from "react";
 import { WinRateAnalysis } from "./win-rate-analysis";
 import { AgentPickAnalysis } from "./agent-pick-analysis";
 
 type StatsTableProps = {
-  teamAMatches: ReadonlyArray<MapStats>;
-  teamBMatches: ReadonlyArray<MapStats>;
+  teamAMatches: ReadonlyArray<MatchStats>;
+  teamBMatches: ReadonlyArray<MatchStats>;
 };
 
-export function StatsTable({ teamAMatches, teamBMatches }: StatsTableProps) {
+export function MatchupAnalysis({ teamAMatches, teamBMatches }: StatsTableProps) {
   const [selectedMap, setSelectedMap] = useState<string>();
 
   const teamAStats = useMemo(() => {
-    return teamAMatches.reduce(reduceStats, new Map<string, AggregatedMapStats>());
+    return teamAMatches.reduce(reduceStats, new Map<string, MapStats>());
   }, [teamAMatches]);
   const teamBStats = useMemo(() => {
-    return teamBMatches.reduce(reduceStats, new Map<string, AggregatedMapStats>());
+    return teamBMatches.reduce(reduceStats, new Map<string, MapStats>());
   }, [teamBMatches]);
 
   const teamCompositions = selectedMap

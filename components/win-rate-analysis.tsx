@@ -1,10 +1,10 @@
-import { AggregatedMapStats, estimateWinProbability, winLossRate } from "@/analysis";
+import { MapStats, estimateWinProbability, winLossRate } from "@/analysis";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import { memo } from "react";
 
 export type WinRateAnalysisProps = {
-  teamAStats: Map<string, AggregatedMapStats>;
-  teamBStats: Map<string, AggregatedMapStats>;
+  teamAStats: Map<string, MapStats>;
+  teamBStats: Map<string, MapStats>;
   onSelectMap: (map: string | undefined) => void;
 }
 
@@ -52,8 +52,8 @@ export const WinRateAnalysis = memo(function WinRateAnalysis(props: WinRateAnaly
           const teamBMapStats = props.teamBStats.get(map);
 
           function renderWinRateComparison(
-            winStat: (mapStats: AggregatedMapStats) => number,
-            loseStat: (mapStats: AggregatedMapStats) => number
+            winStat: (mapStats: MapStats) => number,
+            loseStat: (mapStats: MapStats) => number
           ): string {
             const statA = teamAMapStats === undefined ? "--%" : renderPercentage(winLossRate(winStat(teamAMapStats), loseStat(teamAMapStats)));
             const statB = teamBMapStats === undefined ? "--%" : renderPercentage(winLossRate(winStat(teamBMapStats), loseStat(teamBMapStats)));

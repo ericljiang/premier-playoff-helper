@@ -3,10 +3,10 @@ import { title } from "@/components/primitives";
 import { V1PartialPremierTeam } from "@/valorant-api";
 import { useState } from "react";
 import { DivisionSelect } from "@/components/division-select";
-import { getMatch, getPremierConference, getPremierMatchHistory } from "@/api";
+import { getPremierConference, getPremierMatchHistory } from "@/api";
 import { TeamSelect } from "@/components/team-select";
-import { StatsTable } from "@/components/stats-table";
-import { MapStats, getStats } from "@/analysis";
+import { MatchupAnalysis } from "@/components/matchup-analysis";
+import { MatchStats, getStats } from "@/analysis";
 import { Snippet } from "@nextui-org/snippet";
 import { Toaster, toast } from "sonner";
 import { useTheme } from "next-themes";
@@ -21,8 +21,8 @@ export default function Home() {
   const [isLoadingStats, setLoadingStats] = useState<boolean>(false);
   const [expectedMatches, setExpectedMatches] = useState<number>();
   const [unretrievableMatches, setUnretrievableMatches] = useState<number>();
-  const [teamAMatches, setTeamAMatches] = useState<ReadonlyArray<MapStats>>([]);
-  const [teamBMatches, setTeamBMatches] = useState<ReadonlyArray<MapStats>>([]);
+  const [teamAMatches, setTeamAMatches] = useState<ReadonlyArray<MatchStats>>([]);
+  const [teamBMatches, setTeamBMatches] = useState<ReadonlyArray<MatchStats>>([]);
 
   return (
     <>
@@ -119,7 +119,7 @@ export default function Home() {
         )}
 
         {(teamAMatches.length > 0 || teamBMatches.length > 0) && (
-          <StatsTable teamAMatches={teamAMatches} teamBMatches={teamBMatches} />
+          <MatchupAnalysis teamAMatches={teamAMatches} teamBMatches={teamBMatches} />
         )}
       </section>
     </>

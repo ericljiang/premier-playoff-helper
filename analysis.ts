@@ -1,7 +1,7 @@
 import { getMatch } from "./api";
 import { z } from "zod";
 
-export type MapStats = {
+export type MatchStats = {
   map: string;
   won: number;
   lost: number;
@@ -14,11 +14,11 @@ export type MapStats = {
   teamComposition: string[];
 };
 
-export type AggregatedMapStats = Omit<MapStats, "teamComposition"> & {
+export type MapStats = Omit<MatchStats, "teamComposition"> & {
   teamCompositions: Map<string, number>;
 }
 
-const cachedStatsSchema = z.object({
+const cachedMatchStatsSchema = z.object({
   version: z.literal("2023-11-06"),
   stats: z.object({
     map: z.string(),
@@ -34,8 +34,8 @@ const cachedStatsSchema = z.object({
   })
 });
 
-export async function getStats(matchId: string, teamId: string): Promise<MapStats> {
-  const cacheKey = `MapStats:matchId=${matchId}:teamId=${teamId}`;
+export async function getStats(matchId: string, teamId: string): Promise<MatchStats> {
+  const cacheKey = `MatchStats:matchId=${matchId}:teamId=${teamId}`;
   const cached = getCachedStats(cacheKey);
   if (cached) {
     return cached;
@@ -46,7 +46,7 @@ export async function getStats(matchId: string, teamId: string): Promise<MapStat
   }
 }
 
-function getCachedStats(key: string): MapStats | undefined {
+function getCachedStats(key: string): MatchStats | undefined {
   const stored = localStorage.getItem(key);
   if (!stored) {
     console.log(`No cached stats for key "${key}"`);
@@ -54,7 +54,7 @@ function getCachedStats(key: string): MapStats | undefined {
   }
   console.log(`Found cached stats for key "${key}"`);
   try {
-    const parsed = cachedStatsSchema.parse(JSON.parse(stored) as unknown);
+    const parsed = cachedMatchStatsSchema.parse(JSON.parse(stored) as unknown);
     return parsed.stats;
   } catch {
     console.error(`Failed to parse cached value "${stored}"`);
@@ -62,15 +62,15 @@ function getCachedStats(key: string): MapStats | undefined {
   }
 }
 
-function cacheStats(key: string, stats: MapStats): void {
-  const valueToCache: z.infer<typeof cachedStatsSchema> = {
+function cacheStats(key: string, stats: MatchStats): void {
+  const valueToCache: z.infer<typeof cachedMatchStatsSchema> = {
     version: "2023-11-06",
     stats
   };
   localStorage.setItem(key, JSON.stringify(valueToCache));
 }
 
-async function computeStats(matchId: string, teamId: string): Promise<MapStats> {
+async function computeStats(matchId: string, teamId: string): Promise<MatchStats> {
   const match = await getMatch(matchId);
   const map = match.metadata?.map!;
   const teamColor = match.teams?.blue?.roster?.id === teamId ? "blue" : "red";
@@ -104,7 +104,7 @@ async function computeStats(matchId: string, teamId: string): Promise<MapStats> 
   };
 }
 
-export const reduceStats = (mapStats: Map<string, AggregatedMapStats>, matchStats: MapStats): Map<string, AggregatedMapStats> => {
+export const reduceStats = (mapStats: Map<string, MapStats>, matchStats: MatchStats): Map<string, MapStats> => {
   const { map } = matchStats;
   if (mapStats.has(map)) {
     const current = mapStats.get(map)!;
@@ -133,7 +133,7 @@ export function winLossRate(wins: number, losses: number): number {
   return wins / (wins + losses);
 }
 
-export function estimateWinProbability(teamAStats: AggregatedMapStats, teamBStats: AggregatedMapStats): number {
+export function estimateWinProbability(teamAStats: MapStats, teamBStats: MapStats): number {
   const winProbabilityByMatchWinRate = estimateWinProbabilityByOpposingWinRates(
     winLossRate(teamAStats.won, teamAStats.lost),
     winLossRate(teamBStats.won, teamBStats.lost)
