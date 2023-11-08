@@ -15,7 +15,7 @@ export type MapStats = {
 };
 
 export type AggregatedMapStats = Omit<MapStats, "teamComposition"> & {
-  teamComposition: Map<string, number>;
+  teamCompositions: Map<string, number>;
 }
 
 const cachedStatsSchema = z.object({
@@ -118,12 +118,12 @@ export const reduceStats = (mapStats: Map<string, AggregatedMapStats>, matchStat
       attackRoundsLost: current.attackRoundsLost + matchStats.attackRoundsLost,
       defenseRoundsWon: current.defenseRoundsWon + matchStats.defenseRoundsWon,
       defenseRoundsLost: current.defenseRoundsLost + matchStats.defenseRoundsLost,
-      teamComposition: current.teamComposition.set(JSON.stringify(matchStats.teamComposition), (current.teamComposition.get(JSON.stringify(matchStats.teamComposition)) ?? 0) + 1)
+      teamCompositions: current.teamCompositions.set(JSON.stringify(matchStats.teamComposition), (current.teamCompositions.get(JSON.stringify(matchStats.teamComposition)) ?? 0) + 1)
     });
   } else {
     mapStats.set(map, {
       ...matchStats,
-      teamComposition: new Map<string, number>().set(JSON.stringify(matchStats.teamComposition), 1)
+      teamCompositions: new Map<string, number>().set(JSON.stringify(matchStats.teamComposition), 1)
     });
   }
   return mapStats;
