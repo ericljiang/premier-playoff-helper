@@ -12,14 +12,24 @@ export type MatchStats = {
   defenseRoundsWon: number;
   defenseRoundsLost: number;
   teamComposition: string[];
+  playerLocations: PlayerLocation[];
 };
+
+export type PlayerLocation = {
+  x: number;
+  y: number;
+  timeInRound: number;
+  type: "killer" | "victim" | "other";
+  team: "friendly" | "hostile";
+  half: "attack" | "defense"
+}
 
 export type MapStats = Omit<MatchStats, "teamComposition"> & {
   teamCompositions: Map<string, number>;
 }
 
 const cachedMatchStatsSchema = z.object({
-  version: z.literal("2023-11-06"),
+  version: z.literal("2023-11-08"),
   stats: z.object({
     map: z.string(),
     won: z.number(),
@@ -30,7 +40,15 @@ const cachedMatchStatsSchema = z.object({
     attackRoundsLost: z.number(),
     defenseRoundsWon: z.number(),
     defenseRoundsLost: z.number(),
-    teamComposition: z.array(z.string())
+    teamComposition: z.array(z.string()),
+    playerLocations: z.array(z.object({
+      x: z.number(),
+      y: z.number(),
+      timeInRound: z.number(),
+      type: z.literal("killer").or(z.literal("victim")).or(z.literal("other")),
+      team: z.literal("friendly").or(z.literal("hostile")),
+      half: z.literal("attack").or(z.literal("defense")),
+    }))
   })
 });
 
@@ -64,7 +82,7 @@ function getCachedStats(key: string): MatchStats | undefined {
 
 function cacheStats(key: string, stats: MatchStats): void {
   const valueToCache: z.infer<typeof cachedMatchStatsSchema> = {
-    version: "2023-11-06",
+    version: "2023-11-08",
     stats
   };
   localStorage.setItem(key, JSON.stringify(valueToCache));
@@ -90,6 +108,32 @@ async function computeStats(matchId: string, teamId: string): Promise<MatchStats
 
   const teamComposition = match.players![teamColor]!.map(p => p.character!).sort();
 
+  const playerLocations: PlayerLocation[] = match.rounds?.flatMap((round, roundIndex) =>
+    round.playerStats?.flatMap(playerStats =>
+      playerStats.killEvents?.flatMap((killEvent): PlayerLocation[] => {
+        const half = (roundIndex < 12 && teamColor === "blue") || (roundIndex >= 12 && teamColor === "red") ? "attack" : "defense";
+        return [
+          {
+            x: killEvent.victimDeathLocation!.x!,
+            y: killEvent.victimDeathLocation!.y!,
+            timeInRound: killEvent.killTimeInRound!,
+            type: "victim",
+            team: killEvent.victimTeam?.toLowerCase() === teamColor ? "friendly" : "hostile",
+            half
+          },
+          ...killEvent.playerLocationsOnKill!.map((otherPlayer): PlayerLocation => ({
+            x: otherPlayer.location!.x!,
+            y: otherPlayer.location!.y!,
+            timeInRound: killEvent.killTimeInRound!,
+            type: otherPlayer.playerPuuid === killEvent.killerPuuid ? "killer" : "other",
+            team: otherPlayer.playerTeam?.toLowerCase() === teamColor ? "friendly" : "hostile",
+            half
+          }))
+        ];
+      }) ?? []
+    ) ?? []
+  ) ?? [];
+
   return {
     map,
     won,
@@ -100,7 +144,8 @@ async function computeStats(matchId: string, teamId: string): Promise<MatchStats
     attackRoundsLost,
     defenseRoundsWon,
     defenseRoundsLost,
-    teamComposition
+    teamComposition,
+    playerLocations
   };
 }
 
@@ -118,7 +163,8 @@ export const reduceStats = (mapStats: Map<string, MapStats>, matchStats: MatchSt
       attackRoundsLost: current.attackRoundsLost + matchStats.attackRoundsLost,
       defenseRoundsWon: current.defenseRoundsWon + matchStats.defenseRoundsWon,
       defenseRoundsLost: current.defenseRoundsLost + matchStats.defenseRoundsLost,
-      teamCompositions: current.teamCompositions.set(JSON.stringify(matchStats.teamComposition), (current.teamCompositions.get(JSON.stringify(matchStats.teamComposition)) ?? 0) + 1)
+      teamCompositions: current.teamCompositions.set(JSON.stringify(matchStats.teamComposition), (current.teamCompositions.get(JSON.stringify(matchStats.teamComposition)) ?? 0) + 1),
+      playerLocations: [...current.playerLocations, ...matchStats.playerLocations]
     });
   } else {
     mapStats.set(map, {
