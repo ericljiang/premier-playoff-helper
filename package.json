@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "updateAgentIcons": "curl 'https://valorant-api.com/v1/agents?isPlayableCharacter=true' | jq '{agentIcons: [.data | .[] | {displayName, displayIcon}]}' > agent-icons.json"
+    "updateAgentIcons": "curl 'https://valorant-api.com/v1/agents?isPlayableCharacter=true' | jq '{agentIcons: [.data | .[] | {displayName, displayIcon}]}' > resources/agent-icons.json",
+    "updateMaps": "curl 'https://valorant-api.com/v1/maps' | jq '{maps: [.data | .[] | {displayName, displayIcon, xMultiplier, xScalarToAdd, yMultiplier, yScalarToAdd}]}' > resources/maps.json"
   },
   "dependencies": {
     "@nextui-org/avatar": "^2.0.24",
@@ -25,6 +26,7 @@
     "@nextui-org/table": "^2.0.23",
     "@nextui-org/tabs": "^2.0.24",
     "@nextui-org/theme": "2.1.10",
+    "@observablehq/plot": "^0.6.11",
     "@react-aria/ssr": "^3.7.1",
     "@react-aria/visually-hidden": "^3.8.3",
     "@types/node": "20.5.7",

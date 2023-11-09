@@ -2,7 +2,7 @@ import { Avatar } from "@nextui-org/avatar"
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/table"
 import { Tabs, Tab } from "@nextui-org/tabs"
 import { z } from "zod"
-import { agentIcons } from "@/agent-icons.json"
+import { agentIcons } from "@/resources/agent-icons.json"
 
 
 export type AgentPickAnalysis = {

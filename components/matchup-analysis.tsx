@@ -2,6 +2,7 @@ import { MapStats, MatchStats, reduceStats } from "@/analysis";
 import { useMemo, useState } from "react";
 import { WinRateAnalysis } from "./win-rate-analysis";
 import { AgentPickAnalysis } from "./agent-pick-analysis";
+import { PositionAnalysis } from "./position-analysis";
 
 type StatsTableProps = {
   teamAMatches: ReadonlyArray<MatchStats>;
@@ -40,6 +41,9 @@ export function MatchupAnalysis({ teamAMatches, teamBMatches }: StatsTableProps)
         onSelectMap={setSelectedMap}
       />
       <AgentPickAnalysis teamCompositions={teamCompositions} />
+      {selectedMap && teamBStats.get(selectedMap) && (
+        <PositionAnalysis map={selectedMap} positions={teamBStats.get(selectedMap)!.playerLocations} />
+      )}
     </>
   );
 }
