@@ -28,6 +28,15 @@ export type MapStats = Omit<MatchStats, "teamComposition"> & {
   teamCompositions: Map<string, number>;
 }
 
+const playerLocationSchema = z.object({
+  x: z.number(),
+  y: z.number(),
+  timeInRound: z.number(),
+  type: z.literal("killer").or(z.literal("victim")),
+  team: z.literal("friendly").or(z.literal("hostile")),
+  half: z.literal("attack").or(z.literal("defense")),
+})
+
 const cachedMatchStatsSchema = z.object({
   version: z.literal("2023-11-09"),
   stats: z.object({
@@ -41,14 +50,7 @@ const cachedMatchStatsSchema = z.object({
     defenseRoundsWon: z.number(),
     defenseRoundsLost: z.number(),
     teamComposition: z.array(z.string()),
-    playerLocations: z.array(z.object({
-      x: z.number(),
-      y: z.number(),
-      timeInRound: z.number(),
-      type: z.literal("killer").or(z.literal("victim")),
-      team: z.literal("friendly").or(z.literal("hostile")),
-      half: z.literal("attack").or(z.literal("defense")),
-    }))
+    playerLocations: z.array(playerLocationSchema)
   })
 });
 
@@ -112,25 +114,29 @@ async function computeStats(matchId: string, teamId: string): Promise<MatchStats
     round.playerStats?.flatMap(playerStats =>
       playerStats.killEvents?.flatMap((killEvent): PlayerLocation[] => {
         const half = (roundIndex < 12 && teamColor === "blue") || (roundIndex >= 12 && teamColor === "red") ? "attack" : "defense";
-        return [
-          {
-            x: killEvent.victimDeathLocation!.x!,
-            y: killEvent.victimDeathLocation!.y!,
+        const killerLocation: PlayerLocation[] = killEvent.victimDeathLocation?.x && killEvent.victimDeathLocation?.y
+          ? [{
+            x: killEvent.victimDeathLocation.x,
+            y: killEvent.victimDeathLocation.y,
             timeInRound: killEvent.killTimeInRound!,
             type: "victim",
             team: killEvent.victimTeam?.toLowerCase() === teamColor ? "friendly" : "hostile",
             half
-          },
-          killEvent.playerLocationsOnKill!
-            .filter(otherPlayer => otherPlayer.playerPuuid === killEvent.killerPuuid)
-            .map((otherPlayer): PlayerLocation => ({
-              x: otherPlayer.location!.x!,
-              y: otherPlayer.location!.y!,
-              timeInRound: killEvent.killTimeInRound!,
-              type: "killer",
-              team: otherPlayer.playerTeam?.toLowerCase() === teamColor ? "friendly" : "hostile",
-              half
-            }))[0]
+          }]
+          : [];
+        const victimLocation: PlayerLocation[] = killEvent.playerLocationsOnKill
+          ?.filter(otherPlayer => otherPlayer.playerPuuid === killEvent.killerPuuid)
+          .map((otherPlayer): PlayerLocation => ({
+            x: otherPlayer.location!.x!,
+            y: otherPlayer.location!.y!,
+            timeInRound: killEvent.killTimeInRound!,
+            type: "killer",
+            team: otherPlayer.playerTeam?.toLowerCase() === teamColor ? "friendly" : "hostile",
+            half
+          })) ?? []
+        return [
+          ...killerLocation,
+          ...victimLocation
         ];
       }) ?? []
     ) ?? []
