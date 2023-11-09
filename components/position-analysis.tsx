@@ -3,6 +3,7 @@ import { PlayerLocation } from "@/analysis";
 import { useEffect, useRef } from "react";
 import { maps } from "@/resources/maps.json"
 import { z } from "zod";
+import { Card, CardBody } from "@nextui-org/card";
 
 const mapSchema = z.object({
   displayName: z.string(),
@@ -22,13 +23,15 @@ export function PositionAnalysis(props: PositionAnalysisProps) {
   const map = maps.filter((map): map is z.infer<typeof mapSchema> => mapSchema.safeParse(map).success)
     .find(map => map.displayName === props.map)
 
-  if (!map || !map.displayIcon) {
-    return <>{`${props.map} is not yet supported`}</>
-  } else {
-    return (
-      <Heatmap map={map} positions={props.positions} />
-    )
-  }
+  return (
+    <Card className="w-full">
+      <CardBody>
+        {!map || !map.displayIcon
+          ? <>{`${props.map} is not yet supported :(`}</>
+          : <Heatmap map={map} positions={props.positions} />}
+      </CardBody>
+    </Card>
+  )
 }
 
 function Heatmap({ map: {
@@ -59,7 +62,14 @@ function Heatmap({ map: {
       y: { domain: [0, 1], axis: null },
       marks: [
         Plot.dot(data, { x: "x", y: "y" }),
-        Plot.density(data, { x: "x", y: "y", bandwidth: 10, fill: "density", fillOpacity: 0.5 })
+        Plot.density(data, {
+          x: "x",
+          y: "y",
+          fill: "density",
+          fillOpacity: 0.03,
+          bandwidth: 10,
+          thresholds: 100
+        })
       ],
       style: {
         background: `url(${displayIcon})`,
@@ -71,6 +81,6 @@ function Heatmap({ map: {
   })
 
   return (
-    <div ref={containerRef} />
+    <div className="flex justify-center align-center" ref={containerRef} />
   )
 }
