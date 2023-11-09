@@ -49,24 +49,17 @@ function Heatmap({ map: {
     y: 1 - (x * yMultiplier + yScalarToAdd) // coordinate system puts 0,0 at top-left
   }))
 
+  // https://observablehq.com/plot/getting-started#plot-in-react
   useEffect(() => {
     const plot = Plot.plot({
       aspectRatio: 1,
       margin: 0,
       width: 1024, // Match map image size. Plot will resize if > 100%.
-      x: {
-        domain: [0, 1],
-        axis: null
-      },
-      y: {
-        domain: [0, 1],
-        axis: null
-      },
+      x: { domain: [0, 1], axis: null },
+      y: { domain: [0, 1], axis: null },
       marks: [
-        Plot.dot(data, {
-          x: "x",
-          y: "y"
-        })
+        Plot.dot(data, { x: "x", y: "y" }),
+        Plot.density(data, { x: "x", y: "y", bandwidth: 10, fill: "density", fillOpacity: 0.5 })
       ],
       style: {
         background: `url(${displayIcon})`,
