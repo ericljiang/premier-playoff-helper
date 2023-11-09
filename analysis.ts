@@ -19,7 +19,7 @@ export type PlayerLocation = {
   x: number;
   y: number;
   timeInRound: number;
-  type: "killer" | "victim"// | "other";
+  type: "killer" | "victim";
   team: "friendly" | "hostile";
   half: "attack" | "defense"
 }
@@ -29,7 +29,7 @@ export type MapStats = Omit<MatchStats, "teamComposition"> & {
 }
 
 const cachedMatchStatsSchema = z.object({
-  version: z.literal("2023-11-08"),
+  version: z.literal("2023-11-09"),
   stats: z.object({
     map: z.string(),
     won: z.number(),
@@ -45,7 +45,7 @@ const cachedMatchStatsSchema = z.object({
       x: z.number(),
       y: z.number(),
       timeInRound: z.number(),
-      type: z.literal("killer").or(z.literal("victim")),//.or(z.literal("other")),
+      type: z.literal("killer").or(z.literal("victim")),
       team: z.literal("friendly").or(z.literal("hostile")),
       half: z.literal("attack").or(z.literal("defense")),
     }))
@@ -82,7 +82,7 @@ function getCachedStats(key: string): MatchStats | undefined {
 
 function cacheStats(key: string, stats: MatchStats): void {
   const valueToCache: z.infer<typeof cachedMatchStatsSchema> = {
-    version: "2023-11-08",
+    version: "2023-11-09",
     stats
   };
   localStorage.setItem(key, JSON.stringify(valueToCache));
