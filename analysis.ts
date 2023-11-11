@@ -1,6 +1,22 @@
 import { getMatch } from "./api";
 import { z } from "zod";
 
+const playerLocationSchema = z.object({
+  x: z.number(),
+  y: z.number(),
+  team: z.literal("friendly").or(z.literal("hostile")),
+  name: z.string()
+})
+const killEventSchema = z.object({
+  killer: playerLocationSchema,
+  victim: playerLocationSchema,
+  half: z.literal("attack").or(z.literal("defense")),
+  round: z.number(),
+  timeInRound: z.number(),
+})
+
+export type KillEvent = z.infer<typeof killEventSchema>
+
 export type MatchStats = {
   map: string;
   won: number;
@@ -12,33 +28,15 @@ export type MatchStats = {
   defenseRoundsWon: number;
   defenseRoundsLost: number;
   teamComposition: string[];
-  playerLocations: PlayerLocation[];
+  killEvents: KillEvent[];
 };
-
-export type PlayerLocation = {
-  x: number;
-  y: number;
-  timeInRound: number;
-  type: "killer" | "victim";
-  team: "friendly" | "hostile";
-  half: "attack" | "defense"
-}
 
 export type MapStats = Omit<MatchStats, "teamComposition"> & {
   teamCompositions: Map<string, number>;
 }
 
-const playerLocationSchema = z.object({
-  x: z.number(),
-  y: z.number(),
-  timeInRound: z.number(),
-  type: z.literal("killer").or(z.literal("victim")),
-  team: z.literal("friendly").or(z.literal("hostile")),
-  half: z.literal("attack").or(z.literal("defense")),
-})
-
 const cachedMatchStatsSchema = z.object({
-  version: z.literal("2023-11-09"),
+  version: z.literal("2023-11-10b"),
   stats: z.object({
     map: z.string(),
     won: z.number(),
@@ -50,7 +48,7 @@ const cachedMatchStatsSchema = z.object({
     defenseRoundsWon: z.number(),
     defenseRoundsLost: z.number(),
     teamComposition: z.array(z.string()),
-    playerLocations: z.array(playerLocationSchema)
+    killEvents: z.array(killEventSchema)
   })
 });
 
@@ -84,7 +82,7 @@ function getCachedStats(key: string): MatchStats | undefined {
 
 function cacheStats(key: string, stats: MatchStats): void {
   const valueToCache: z.infer<typeof cachedMatchStatsSchema> = {
-    version: "2023-11-09",
+    version: "2023-11-10b",
     stats
   };
   localStorage.setItem(key, JSON.stringify(valueToCache));
@@ -110,37 +108,37 @@ async function computeStats(matchId: string, teamId: string): Promise<MatchStats
 
   const teamComposition = match.players![teamColor]!.map(p => p.character!).sort();
 
-  const playerLocations: PlayerLocation[] = match.rounds?.flatMap((round, roundIndex) =>
+  const unsafeKillEvents: KillEvent[] = match.rounds?.flatMap((round, roundIndex) =>
     round.playerStats?.flatMap(playerStats =>
-      playerStats.killEvents?.flatMap((killEvent): PlayerLocation[] => {
+      playerStats.killEvents?.map((killEvent): KillEvent => {
         const half = (roundIndex < 12 && teamColor === "blue") || (roundIndex >= 12 && teamColor === "red") ? "attack" : "defense";
-        const killerLocation: PlayerLocation[] = killEvent.victimDeathLocation?.x && killEvent.victimDeathLocation?.y
-          ? [{
-            x: killEvent.victimDeathLocation.x,
-            y: killEvent.victimDeathLocation.y,
-            timeInRound: killEvent.killTimeInRound!,
-            type: "victim",
-            team: killEvent.victimTeam?.toLowerCase() === teamColor ? "friendly" : "hostile",
-            half
-          }]
-          : [];
-        const victimLocation: PlayerLocation[] = killEvent.playerLocationsOnKill
+        const timeInRound = killEvent.killTimeInRound!
+        const victim = {
+          x: killEvent.victimDeathLocation!.x!,
+          y: killEvent.victimDeathLocation!.y!,
+          team: killEvent.victimTeam?.toLowerCase() === teamColor ? "friendly" as const : "hostile" as const,
+          name: killEvent.victimDisplayName!
+        }
+        const killer = killEvent.playerLocationsOnKill
           ?.filter(otherPlayer => otherPlayer.playerPuuid === killEvent.killerPuuid)
-          .map((otherPlayer): PlayerLocation => ({
+          .map(otherPlayer => ({
             x: otherPlayer.location!.x!,
             y: otherPlayer.location!.y!,
-            timeInRound: killEvent.killTimeInRound!,
-            type: "killer",
-            team: otherPlayer.playerTeam?.toLowerCase() === teamColor ? "friendly" : "hostile",
-            half
-          })) ?? []
-        return [
-          ...killerLocation,
-          ...victimLocation
-        ];
+            team: otherPlayer.playerTeam?.toLowerCase() === teamColor ? "friendly" as const : "hostile" as const,
+            name: otherPlayer.playerDisplayName!
+          }))
+          .find(() => true)!
+        return {
+          killer,
+          victim,
+          half,
+          round: roundIndex,
+          timeInRound
+        };
       }) ?? []
     ) ?? []
   ) ?? [];
+  const killEvents = unsafeKillEvents.filter(k => killEventSchema.safeParse(k).success)
 
   return {
     map,
@@ -153,7 +151,7 @@ async function computeStats(matchId: string, teamId: string): Promise<MatchStats
     defenseRoundsWon,
     defenseRoundsLost,
     teamComposition,
-    playerLocations
+    killEvents
   };
 }
 
@@ -172,7 +170,7 @@ export const reduceStats = (mapStats: Map<string, MapStats>, matchStats: MatchSt
       defenseRoundsWon: current.defenseRoundsWon + matchStats.defenseRoundsWon,
       defenseRoundsLost: current.defenseRoundsLost + matchStats.defenseRoundsLost,
       teamCompositions: current.teamCompositions.set(JSON.stringify(matchStats.teamComposition), (current.teamCompositions.get(JSON.stringify(matchStats.teamComposition)) ?? 0) + 1),
-      playerLocations: [...current.playerLocations, ...matchStats.playerLocations]
+      killEvents: [...current.killEvents, ...matchStats.killEvents]
     });
   } else {
     mapStats.set(map, {

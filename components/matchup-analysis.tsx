@@ -42,7 +42,7 @@ export function MatchupAnalysis({ teamAMatches, teamBMatches }: StatsTableProps)
       />
       <AgentPickAnalysis teamCompositions={teamCompositions} />
       {selectedMap && teamBStats.get(selectedMap) && (
-        <PositionAnalysis map={selectedMap} positions={teamBStats.get(selectedMap)!.playerLocations} />
+        <PositionAnalysis map={selectedMap} killEvents={teamBStats.get(selectedMap)!.killEvents} />
       )}
     </>
   );

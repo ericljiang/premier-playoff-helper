@@ -1,3 +1,4 @@
+import { isDefined } from "./util";
 import { Affinities, DefaultApi, Match, PremierConferences, V1PartialPremierTeam, createConfiguration } from "./valorant-api";
 
 const config = createConfiguration();
@@ -46,8 +47,4 @@ export async function getPremierMatchHistory(teamId: string): Promise<string[]> 
     throw Error();
   }
   return response.data.leagueMatches.map(match => match.id).filter(isDefined);
-}
-
-function isDefined<T>(x: T): x is Exclude<T, undefined> {
-  return x !== undefined;
 }
