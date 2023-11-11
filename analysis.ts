@@ -85,7 +85,13 @@ function cacheStats(key: string, stats: MatchStats): void {
     version: "2023-11-10c",
     stats
   };
-  localStorage.setItem(key, JSON.stringify(valueToCache));
+  try {
+    localStorage.setItem(key, JSON.stringify(valueToCache));
+  } catch (error) {
+    console.error("Error writing to cache, clearing localStorage.")
+    console.error(error);
+    localStorage.clear();
+  }
 }
 
 async function computeStats(matchId: string, teamId: string): Promise<MatchStats> {
