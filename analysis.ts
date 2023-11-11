@@ -36,7 +36,7 @@ export type MapStats = Omit<MatchStats, "teamComposition"> & {
 }
 
 const cachedMatchStatsSchema = z.object({
-  version: z.literal("2023-11-10b"),
+  version: z.literal("2023-11-10c"),
   stats: z.object({
     map: z.string(),
     won: z.number(),
@@ -82,7 +82,7 @@ function getCachedStats(key: string): MatchStats | undefined {
 
 function cacheStats(key: string, stats: MatchStats): void {
   const valueToCache: z.infer<typeof cachedMatchStatsSchema> = {
-    version: "2023-11-10b",
+    version: "2023-11-10c",
     stats
   };
   localStorage.setItem(key, JSON.stringify(valueToCache));
@@ -98,9 +98,10 @@ async function computeStats(matchId: string, teamId: string): Promise<MatchStats
   const roundsWon = match.teams![teamColor]!.roundsWon!;
   const roundsLost = match.teams![teamColor]!.roundsLost!;
 
-  // assumption - blue team attacks first half
-  const attackRounds = teamColor === "blue" ? match.rounds!.slice(0, 12) : match.rounds!.slice(12);
-  const defenseRounds = teamColor === "red" ? match.rounds!.slice(0, 12) : match.rounds!.slice(12);
+  // assumption - red team attacks first half
+  // https://discord.com/channels/704231681309278228/884402649322115082/1089297118516232293
+  const attackRounds = teamColor === "red" ? match.rounds!.slice(0, 12) : match.rounds!.slice(12);
+  const defenseRounds = teamColor === "blue" ? match.rounds!.slice(0, 12) : match.rounds!.slice(12);
   const attackRoundsWon = attackRounds.filter(round => round.winningTeam?.toLowerCase() === teamColor).length;
   const attackRoundsLost = attackRounds.length - attackRoundsWon;
   const defenseRoundsWon = defenseRounds.filter(round => round.winningTeam?.toLowerCase() === teamColor).length;
@@ -111,7 +112,7 @@ async function computeStats(matchId: string, teamId: string): Promise<MatchStats
   const unsafeKillEvents: KillEvent[] = match.rounds?.flatMap((round, roundIndex) =>
     round.playerStats?.flatMap(playerStats =>
       playerStats.killEvents?.map((killEvent): KillEvent => {
-        const half = (roundIndex < 12 && teamColor === "blue") || (roundIndex >= 12 && teamColor === "red") ? "attack" : "defense";
+        const half = (roundIndex < 12 && teamColor === "red") || (roundIndex >= 12 && teamColor === "blue") ? "attack" : "defense";
         const timeInRound = killEvent.killTimeInRound!
         const victim = {
           x: killEvent.victimDeathLocation!.x!,
