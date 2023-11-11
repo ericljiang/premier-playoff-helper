@@ -67,8 +67,7 @@ export default function Home() {
           <>
             <h1 className={title()}>Select matchup</h1>
             <TeamSelect
-              teams={divisionTeams.sort((a, b) =>
-                a.name!.toLocaleLowerCase() > b.name!.toLocaleLowerCase() ? 1 : -1)}
+              teams={divisionTeams.sort((a, b) => a.name!.localeCompare(b.name!))}
               onSelect={async ({ teamA, teamB }, opponentName) => {
                 setLoadingStats(true);
                 setExpectedMatches(undefined);
