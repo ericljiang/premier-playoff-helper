@@ -7,9 +7,10 @@ import { PositionAnalysis } from "./position-analysis";
 type StatsTableProps = {
   teamAMatches: ReadonlyArray<MatchStats>;
   teamBMatches: ReadonlyArray<MatchStats>;
+  opponentName: string;
 };
 
-export function MatchupAnalysis({ teamAMatches, teamBMatches }: StatsTableProps) {
+export function MatchupAnalysis({ teamAMatches, teamBMatches, opponentName }: StatsTableProps) {
   const [selectedMap, setSelectedMap] = useState<string>();
 
   const teamAStats = useMemo(() => {
@@ -42,7 +43,11 @@ export function MatchupAnalysis({ teamAMatches, teamBMatches }: StatsTableProps)
       />
       <AgentPickAnalysis teamCompositions={teamCompositions} />
       {selectedMap && teamBStats.get(selectedMap) && (
-        <PositionAnalysis map={selectedMap} killEvents={teamBStats.get(selectedMap)!.killEvents} />
+        <PositionAnalysis
+          map={selectedMap}
+          killEvents={teamBStats.get(selectedMap)!.killEvents}
+          teamName={opponentName}
+        />
       )}
     </>
   );

@@ -18,7 +18,8 @@ const mapSchema = z.object({
 
 type PositionAnalysisProps = {
   map: string;
-  killEvents: KillEvent[]
+  killEvents: KillEvent[],
+  teamName: string,
 }
 
 export function PositionAnalysis(props: PositionAnalysisProps) {
@@ -30,21 +31,26 @@ export function PositionAnalysis(props: PositionAnalysisProps) {
       <CardBody>
         {!map || !map.displayIcon
           ? <>{`${props.map} is not yet supported :(`}</>
-          : <Heatmap map={map} killEvents={props.killEvents} />}
+          : <Heatmap map={map} killEvents={props.killEvents} teamName={props.teamName} />}
       </CardBody>
     </Card>
   )
 }
 
-function Heatmap({ map: {
-  displayIcon,
-  xMultiplier,
-  yMultiplier,
-  xScalarToAdd,
-  yScalarToAdd
-}, killEvents }: {
+function Heatmap({
+  map: {
+    displayIcon,
+    xMultiplier,
+    yMultiplier,
+    xScalarToAdd,
+    yScalarToAdd
+  },
+  killEvents,
+  teamName
+}: {
   map: z.infer<typeof mapSchema>
-  killEvents: KillEvent[]
+  killEvents: KillEvent[],
+  teamName: string
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState<number>()
@@ -155,7 +161,7 @@ function Heatmap({ map: {
   return (
     <div className="flex flex-col gap-y-4">
       <div className="flex gap-1 items-center">
-        Banana Shovers&apos;s
+        {teamName}&apos;s
         <Tabs
           selectedKey={selectedKillsOrDeaths}
           onSelectionChange={key => {
