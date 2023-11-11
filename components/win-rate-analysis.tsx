@@ -1,4 +1,5 @@
 import { MapStats, estimateWinProbability, winLossRate } from "@/analysis";
+import { renderPercentage } from "@/util";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import { memo } from "react";
 
@@ -95,10 +96,3 @@ export const WinRateAnalysis = memo(function WinRateAnalysis(props: WinRateAnaly
     </Table>
   );
 });
-
-function renderPercentage(n: number | undefined): string {
-  if (n === undefined || isNaN(n)) {
-    return "--%";
-  }
-  return `${(n * 100).toFixed(0)}%`;
-}

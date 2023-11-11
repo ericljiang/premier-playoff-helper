@@ -1,8 +1,8 @@
 import { MapStats, MatchStats, reduceStats } from "@/analysis";
 import { useMemo, useState } from "react";
 import { WinRateAnalysis } from "./win-rate-analysis";
-import { AgentPickAnalysis } from "./agent-pick-analysis";
 import { PositionAnalysis } from "./position-analysis";
+import { AgentPickAnalysis } from "./agent-pick-analysis/agent-pick-analysis";
 
 type StatsTableProps = {
   teamAMatches: ReadonlyArray<MatchStats>;
