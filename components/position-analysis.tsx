@@ -160,8 +160,7 @@ function Heatmap({
 
   return (
     <div className="flex flex-col gap-y-4">
-      <div className="flex gap-1 items-center">
-        {teamName}&apos;s
+      <div className="flex flex-wrap gap-1 items-center">
         <Tabs
           selectedKey={selectedKillsOrDeaths}
           onSelectionChange={key => {
@@ -174,7 +173,6 @@ function Heatmap({
           <Tab key="kills" title="Kills" />
           <Tab key="deaths" title="Deaths" />
         </Tabs>
-        on
         <Tabs
           selectedKey={selectedHalf}
           onSelectionChange={key => {
