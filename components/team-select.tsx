@@ -12,7 +12,7 @@ type Inputs = {
 
 export type TeamSelectProps = {
   teams: V1PartialPremierTeam[];
-  onSelect: (teams: Inputs, opponentName?: string) => void;
+  onSelect: (teams: Inputs) => void;
   isLoading: boolean
 };
 
@@ -30,10 +30,7 @@ export function TeamSelect({ teams, onSelect, isLoading }: TeamSelectProps) {
 
   return (
     <form
-      onSubmit={handleSubmit((inputs: Inputs) => {
-        const opponentName = teams.find(team => team.id === inputs.teamB)?.name
-        return onSelect(inputs, opponentName);
-      })}
+      onSubmit={handleSubmit(onSelect)}
       className="flex w-full flex-wrap md:flex-nowrap gap-4 items-center justify-center"
     >
       <Select

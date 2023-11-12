@@ -1,9 +1,9 @@
 import * as Plot from "@observablehq/plot";
 import { KillEvent } from "@/analysis";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { PropsWithChildren, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { maps } from "@/resources/maps.json"
 import { z } from "zod";
-import { Card, CardBody } from "@nextui-org/card";
+import { Card, CardBody, CardHeader } from "@nextui-org/card";
 import { Slider } from "@nextui-org/slider";
 import { Tab, Tabs } from "@nextui-org/tabs";
 
@@ -16,47 +16,114 @@ const mapSchema = z.object({
   yScalarToAdd: z.number()
 })
 
+type MapMetadata = z.infer<typeof mapSchema>
+
 type PositionAnalysisProps = {
-  map: string;
-  killEvents: KillEvent[],
-  teamName: string,
+  map?: string;
+  killEvents?: KillEvent[];
 }
 
 export function PositionAnalysis(props: PositionAnalysisProps) {
-  const map = maps.filter((map): map is z.infer<typeof mapSchema> => mapSchema.safeParse(map).success)
-    .find(map => map.displayName === props.map)
+  const [selectedKillsOrDeaths, setSelectedKillsOrDeaths] = useState<"kills" | "deaths">("kills");
+  const [selectedHalf, setSelectedHalf] = useState<"attack" | "defense">("attack");
+  const [timeRange, setTimeRange] = useState<[number, number]>([0, 100]);
+
+  function cardContent(): JSX.Element {
+    if (!props.map) {
+      return <ErrorMessage>Select a map to see visualization</ErrorMessage>;
+    }
+    if (!props.killEvents) {
+      return <ErrorMessage>No data for {props.map}</ErrorMessage>;
+    }
+    const mapMetadata = maps.filter((map): map is MapMetadata => mapSchema.safeParse(map).success)
+      .find(map => map.displayName === props.map)
+    if (!mapMetadata || !mapMetadata.displayIcon) {
+      return <ErrorMessage>{props.map} is not yet supported :(</ErrorMessage>;
+    }
+    return (
+      <Heatmap
+        mapMetadata={mapMetadata}
+        killEvents={props.killEvents}
+        selectedKillsOrDeaths={selectedKillsOrDeaths}
+        selectedHalf={selectedHalf}
+        timeRange={timeRange}
+      />
+    );
+  }
 
   return (
     <Card className="w-full">
+      <CardHeader>
+        <div className="w-full flex flex-wrap items-center gap-2">
+          <Tabs
+            selectedKey={selectedKillsOrDeaths}
+            onSelectionChange={key => {
+              if (key !== "kills" && key !== "deaths") {
+                throw Error();
+              }
+              setSelectedKillsOrDeaths(key);
+            }}
+          >
+            <Tab key="kills" title="Kills" />
+            <Tab key="deaths" title="Deaths" />
+          </Tabs>
+          <Tabs
+            selectedKey={selectedHalf}
+            onSelectionChange={key => {
+              if (key !== "attack" && key !== "defense") {
+                throw Error();
+              }
+              setSelectedHalf(key);
+            }}
+          >
+            <Tab key="attack" title="Attack" />
+            <Tab key="defense" title="Defense" />
+          </Tabs>
+          <Slider
+            className="flex-grow w-60 px-2"
+            size="sm"
+            showSteps
+            label="Time range"
+            step={5}
+            minValue={0}
+            maxValue={100}
+            defaultValue={[0, 100]}
+            formatOptions={{ style: "unit", unit: "second", unitDisplay: "narrow" }}
+            onChange={(value) => {
+              setTimeRange(value as [number, number]);
+            }}
+          />
+        </div>
+      </CardHeader>
       <CardBody>
-        {!map || !map.displayIcon
-          ? <>{`${props.map} is not yet supported :(`}</>
-          : <Heatmap map={map} killEvents={props.killEvents} teamName={props.teamName} />}
+        {cardContent()}
       </CardBody>
     </Card>
   )
 }
 
-function Heatmap({
-  map: {
-    displayIcon,
-    xMultiplier,
-    yMultiplier,
-    xScalarToAdd,
-    yScalarToAdd
-  },
-  killEvents,
-  teamName
-}: {
-  map: z.infer<typeof mapSchema>
-  killEvents: KillEvent[],
-  teamName: string
-}) {
+function Heatmap(
+  {
+    mapMetadata: {
+      displayIcon,
+      xMultiplier,
+      yMultiplier,
+      xScalarToAdd,
+      yScalarToAdd
+    },
+    killEvents,
+    selectedKillsOrDeaths,
+    selectedHalf,
+    timeRange
+  }: {
+    mapMetadata: MapMetadata;
+    killEvents: KillEvent[];
+    selectedKillsOrDeaths: "kills" | "deaths";
+    selectedHalf: "attack" | "defense";
+    timeRange: [number, number];
+  }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState<number>()
-  const [selectedKillsOrDeaths, setSelectedKillsOrDeaths] = useState<"kills" | "deaths">("kills");
-  const [selectedHalf, setSelectedHalf] = useState<"attack" | "defense">("attack");
-  const [timeRange, setTimeRange] = useState<[number, number]>([0, 100]);
+  const [width, setWidth] = useState<number>();
 
   function transformGameCoordinates(coordinates: { x: number, y: number }): { x: number, y: number } {
     return {
@@ -96,12 +163,11 @@ function Heatmap({
       stroke: "#a00",
     }
   ]);
-  const links = data
-    .map(({ killer, victim }) => {
-      const { x: x1, y: y1 } = transformGameCoordinates(killer)
-      const { x: x2, y: y2 } = transformGameCoordinates(victim)
-      return { x1, y1, x2, y2 };
-    });
+  const links = data.map(({ killer, victim }) => {
+    const { x: x1, y: y1 } = transformGameCoordinates(killer);
+    const { x: x2, y: y2 } = transformGameCoordinates(victim);
+    return { x1, y1, x2, y2 };
+  });
 
   useLayoutEffect(() => {
     const updateWidth = () => setWidth(containerRef.current?.offsetWidth);
@@ -159,46 +225,11 @@ function Heatmap({
   });
 
   return (
-    <div className="flex flex-col gap-y-4">
-      <div className="flex flex-wrap gap-1 items-center">
-        <Tabs
-          selectedKey={selectedKillsOrDeaths}
-          onSelectionChange={key => {
-            if (key !== "kills" && key !== "deaths") {
-              throw Error();
-            }
-            setSelectedKillsOrDeaths(key);
-          }}
-        >
-          <Tab key="kills" title="Kills" />
-          <Tab key="deaths" title="Deaths" />
-        </Tabs>
-        <Tabs
-          selectedKey={selectedHalf}
-          onSelectionChange={key => {
-            if (key !== "attack" && key !== "defense") {
-              throw Error();
-            }
-            setSelectedHalf(key);
-          }}
-        >
-          <Tab key="attack" title="Attack" />
-          <Tab key="defense" title="Defense" />
-        </Tabs>
-      </div>
-      <Slider
-        className="max-w"
-        label="Time Range"
-        step={1}
-        minValue={0}
-        maxValue={100}
-        defaultValue={[0, 100]}
-        formatOptions={{ style: "unit", unit: "second", unitDisplay: "narrow" }}
-        onChange={(value) => {
-          setTimeRange(value as [number, number])
-        }}
-      />
-      <div className="flex justify-center align-center" ref={containerRef} />
-    </div>
+    <div className="flex justify-center align-center" ref={containerRef} />
   )
 }
+
+const ErrorMessage = ({ children }: PropsWithChildren<{}>) =>
+  <div className="h-40 flex justify-center items-center">
+    <span className="text-foreground-400">{children}</span>
+  </div>;

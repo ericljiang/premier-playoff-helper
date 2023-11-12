@@ -23,7 +23,6 @@ export default function Home() {
   const [unretrievableMatches, setUnretrievableMatches] = useState<number>();
   const [teamAMatches, setTeamAMatches] = useState<ReadonlyArray<MatchStats>>([]);
   const [teamBMatches, setTeamBMatches] = useState<ReadonlyArray<MatchStats>>([]);
-  const [opponentName, setOpponentName] = useState<string>();
 
   return (
     <>
@@ -68,12 +67,11 @@ export default function Home() {
             <h1 className={title()}>Select matchup</h1>
             <TeamSelect
               teams={divisionTeams.sort((a, b) => a.name!.localeCompare(b.name!))}
-              onSelect={async ({ teamA, teamB }, opponentName) => {
+              onSelect={async ({ teamA, teamB }) => {
                 setLoadingStats(true);
                 setExpectedMatches(undefined);
                 setTeamAMatches([]);
                 setTeamBMatches([]);
-                setOpponentName(opponentName)
 
                 const teamAMatchHistoryPromise = getPremierMatchHistory(teamA);
                 const teamBMatchHistoryPromise = getPremierMatchHistory(teamB);
@@ -121,7 +119,7 @@ export default function Home() {
         )}
 
         {(teamAMatches.length > 0 || teamBMatches.length > 0) && (
-          <MatchupAnalysis teamAMatches={teamAMatches} teamBMatches={teamBMatches} opponentName={opponentName!} />
+          <MatchupAnalysis teamAMatches={teamAMatches} teamBMatches={teamBMatches} />
         )}
       </section>
     </>

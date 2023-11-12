@@ -18,7 +18,6 @@ export function AgentPickAnalysis({ teamCompositions }: AgentPickAnalysisProps) 
       <Tabs
         selectedKey={selectedTab}
         onSelectionChange={setSelectedTab}
-        disableAnimation // https://github.com/nextui-org/nextui/issues/1467
       >
         <Tab key="individual" title="Individual" />
         <Tab key="team" title="Team" />
