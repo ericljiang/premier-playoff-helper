@@ -6,6 +6,7 @@ import { z } from "zod";
 import { agentIcons } from "@/resources/agent-icons.json";
 import { renderPercentage } from "@/util";
 import { AgentPickAnalysisProps } from "./agent-pick-analysis";
+import { HorizontalScrollShadow } from "../horizontal-scroll-shadow";
 
 export function AgentFrequencyTable({ teamCompositions, rowLimit }: AgentPickAnalysisProps & { rowLimit: number; }) {
   const [showMore, setShowMore] = useState(false);
@@ -29,6 +30,7 @@ export function AgentFrequencyTable({ teamCompositions, rowLimit }: AgentPickAna
 
   return (
     <Table
+      BaseComponent={HorizontalScrollShadow}
       aria-label="Table of most common agents"
       bottomContent={
         rows.length > rowLimit && (

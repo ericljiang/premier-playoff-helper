@@ -2,6 +2,7 @@ import { MapStats, estimateWinProbability, winLossRate } from "@/analysis";
 import { renderPercentage } from "@/util";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import { memo } from "react";
+import { HorizontalScrollShadow } from "./horizontal-scroll-shadow";
 
 export type WinRateAnalysisProps = {
   teamAStats: Map<string, MapStats>;
@@ -12,6 +13,7 @@ export type WinRateAnalysisProps = {
 export const WinRateAnalysis = memo(function WinRateAnalysis(props: WinRateAnalysisProps) {
   return (
     <Table
+      BaseComponent={HorizontalScrollShadow}
       aria-label="Team stats per map"
       selectionMode="single"
       color="primary"
