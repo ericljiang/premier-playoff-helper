@@ -54,7 +54,7 @@ export function PositionAnalysis(props: PositionAnalysisProps) {
   return (
     <Card className="w-full">
       <CardHeader>
-        <div className="w-full flex flex-wrap items-center gap-2">
+        <div className="w-full flex flex-wrap items-center gap-1">
           <Tabs
             selectedKey={selectedKillsOrDeaths}
             onSelectionChange={key => {
@@ -170,17 +170,24 @@ function Heatmap(
   });
 
   useLayoutEffect(() => {
-    const updateWidth = () => setWidth(containerRef.current?.offsetWidth);
+    const updateWidth = () => {
+      if (containerRef.current) {
+        // don't exceed dimensions of map image
+        const width = Math.min(containerRef.current.offsetWidth, 1024);
+        setWidth(width);
+      }
+    };
+    updateWidth();
     window.addEventListener("resize", updateWidth);
     return () => window.removeEventListener("resize", updateWidth);
-  })
+  }, [])
 
   // https://observablehq.com/plot/getting-started#plot-in-react
   useEffect(() => {
     const plot = Plot.plot({
       aspectRatio: 1,
       margin: 0,
-      width, // Match map image size. Plot will resize if > 100%.
+      width, // Plot will resize if > 100%.
       x: { domain: [0, 1], axis: null },
       y: { domain: [0, 1], axis: null },
       marks: [
@@ -230,6 +237,6 @@ function Heatmap(
 }
 
 const ErrorMessage = ({ children }: PropsWithChildren<{}>) =>
-  <div className="h-40 flex justify-center items-center">
+  <div className="h-60 flex justify-center items-center">
     <span className="text-foreground-400">{children}</span>
   </div>;
