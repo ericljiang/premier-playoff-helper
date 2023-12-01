@@ -1,9 +1,8 @@
 "use client"; // https://github.com/nextui-org/nextui/issues/1403
 import { V1PartialPremierTeam } from "@/valorant-api";
+import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 import { Button } from "@nextui-org/button";
-import { Select, SelectItem } from "@nextui-org/select";
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
 
 type Inputs = {
   teamA: string;
@@ -17,52 +16,51 @@ export type TeamSelectProps = {
 };
 
 export function TeamSelect({ teams, onSelect, isLoading }: TeamSelectProps) {
-  const {
-    register,
-    handleSubmit,
-    formState: { isValid },
-    reset
-  } = useForm<Inputs>();
+  const [teamA, setTeamA] = useState<string>();
+  const [teamB, setTeamB] = useState<string>();
 
   useEffect(() => {
-    reset()
-  }, [teams, reset])
+    setTeamA(undefined);
+    setTeamB(undefined);
+  }, [teams])
 
   return (
-    <form
-      onSubmit={handleSubmit(onSelect)}
+    <div
       className="flex w-full flex-wrap md:flex-nowrap gap-4 items-center justify-center"
     >
-      <Select
+      <Autocomplete
         label="Your team"
-        {...register("teamA", { required: true })}
+        selectedKey={teamA ?? null}
+        onSelectionChange={key => setTeamA(key as string)}
       >
         {teams.map(team => (
-          <SelectItem key={team.id!}>
+          <AutocompleteItem key={team.id!}>
             {team.name}
-          </SelectItem>
+          </AutocompleteItem>
         ))}
-      </Select>
+      </Autocomplete>
       vs
-      <Select
+      <Autocomplete
         label="Opponent team"
-        {...register("teamB", { required: true })}
+        selectedKey={teamB ?? null}
+        onSelectionChange={key => setTeamB(key as string)}
       >
         {teams.map(team => (
-          <SelectItem key={team.id!}>
+          <AutocompleteItem key={team.id!}>
             {team.name}
-          </SelectItem>
+          </AutocompleteItem>
         ))}
-      </Select>
+      </Autocomplete>
       <Button
         size="lg"
         color="primary"
         type="submit"
-        isDisabled={!isValid || isLoading}
+        isDisabled={!teamA || !teamB || isLoading}
         isLoading={isLoading}
+        onPress={() => teamA && teamB && onSelect({ teamA, teamB })}
       >
         {isLoading ? "" : "Next"}
       </Button>
-    </form>
+    </div>
   );
 }

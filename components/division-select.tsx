@@ -1,8 +1,8 @@
 "use client"; // https://github.com/nextui-org/nextui/issues/1403
 import { PremierConferences } from "@/valorant-api";
+import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
 import { Button } from "@nextui-org/button";
-import { Select, SelectItem } from "@nextui-org/select";
-import { useForm } from "react-hook-form";
+import { useState } from "react";
 
 type Inputs = {
   conference: PremierConferences;
@@ -57,47 +57,49 @@ const divisionNames = [
 ]
 
 export function DivisionSelect({ onSelect, isLoading }: DivisionSelectProps) {
-  const {
-    register,
-    handleSubmit,
-    formState: { isValid },
-  } = useForm<Inputs>();
+  const [conference, setConference] = useState<PremierConferences>();
+  const [division, setDivision] = useState<number>();
 
   return (
-    <form onSubmit={handleSubmit(onSelect)} className="flex w-full flex-wrap md:flex-nowrap gap-4 items-center justify-center">
-      <Select
+    <div
+      className="flex w-full flex-wrap md:flex-nowrap gap-4 items-center justify-center"
+    >
+      <Autocomplete
         label="Zone"
-        {...register("conference", { required: true })}
+        selectedKey={conference ?? null}
+        onSelectionChange={key => setConference(key as PremierConferences)}
       >
         {Object.values(PremierConferences)
           .map(conference => (
-            <SelectItem key={conference} value={conference}>
+            <AutocompleteItem key={conference} value={conference}>
               {conferenceNames[conference]}
-            </SelectItem>
+            </AutocompleteItem>
           ))}
-      </Select>
-      <Select
+      </Autocomplete>
+      <Autocomplete
         label="Division"
-        {...register("division", { required: true })}
+        selectedKey={division ?? null}
+        onSelectionChange={key => setDivision(key as number)}
       >
         {Array.from(Array(21).keys())
           .map(i => i + 1)
           .filter(i => i >= 2)
           .map(division => (
-            <SelectItem key={division} value={division}>
+            <AutocompleteItem key={division} value={division}>
               {divisionNames[division]}
-            </SelectItem>
+            </AutocompleteItem>
           ))}
-      </Select>
+      </Autocomplete>
       <Button
         size="lg"
         color="primary"
         type="submit"
-        isDisabled={!isValid || isLoading}
+        isDisabled={!conference || !division || isLoading}
         isLoading={isLoading}
+        onPress={() => conference && division && onSelect({ conference, division })}
       >
         {isLoading ? "" : "Next"}
       </Button>
-    </form>
+    </div>
   );
 }

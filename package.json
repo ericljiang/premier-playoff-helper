@@ -11,6 +11,7 @@
     "updateMaps": "curl 'https://valorant-api.com/v1/maps' | jq '{maps: [.data | .[] | {displayName, displayIcon, xMultiplier, xScalarToAdd, yMultiplier, yScalarToAdd}]}' > resources/maps.json"
   },
   "dependencies": {
+    "@nextui-org/autocomplete": "^2.0.9",
     "@nextui-org/avatar": "^2.0.24",
     "@nextui-org/button": "2.0.18",
     "@nextui-org/card": "^2.0.24",
