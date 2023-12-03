@@ -96,43 +96,43 @@ function cacheStats(key: string, stats: MatchStats): void {
 
 async function computeStats(matchId: string, teamId: string): Promise<MatchStats> {
   const match = await getMatch(matchId);
-  const map = match.metadata?.map!;
-  const teamColor = match.teams?.blue?.roster?.id === teamId ? "blue" : "red";
+  const map = match.map;
+  const teamColor = match.teams.blue.premierTeamId === teamId ? "blue" : "red";
 
-  const won = match.teams![teamColor]!.hasWon! ? 1 : 0;
+  const won = match.teams[teamColor].won! ? 1 : 0;
   const lost = won === 0 ? 1 : 0;
-  const roundsWon = match.teams![teamColor]!.roundsWon!;
-  const roundsLost = match.teams![teamColor]!.roundsLost!;
+  const roundsWon = match.teams[teamColor].roundsWon;
+  const roundsLost = match.teams[teamColor].roundsLost;
 
   // assumption - red team attacks first half
   // https://discord.com/channels/704231681309278228/884402649322115082/1089297118516232293
-  const attackRounds = teamColor === "red" ? match.rounds!.slice(0, 12) : match.rounds!.slice(12);
-  const defenseRounds = teamColor === "blue" ? match.rounds!.slice(0, 12) : match.rounds!.slice(12);
-  const attackRoundsWon = attackRounds.filter(round => round.winningTeam?.toLowerCase() === teamColor).length;
+  const attackRounds = teamColor === "red" ? match.rounds.slice(0, 12) : match.rounds.slice(12);
+  const defenseRounds = teamColor === "blue" ? match.rounds.slice(0, 12) : match.rounds.slice(12);
+  const attackRoundsWon = attackRounds.filter(round => round.winningTeam.toLowerCase() === teamColor).length;
   const attackRoundsLost = attackRounds.length - attackRoundsWon;
-  const defenseRoundsWon = defenseRounds.filter(round => round.winningTeam?.toLowerCase() === teamColor).length;
+  const defenseRoundsWon = defenseRounds.filter(round => round.winningTeam.toLowerCase() === teamColor).length;
   const defenseRoundsLost = defenseRounds.length - defenseRoundsWon;
 
-  const teamComposition = match.players![teamColor]!.map(p => p.character!).sort();
+  const teamComposition = match.players[teamColor].map(p => p.character!).sort();
 
   const unsafeKillEvents: KillEvent[] = match.rounds?.flatMap((round, roundIndex) =>
-    round.playerStats?.flatMap(playerStats =>
-      playerStats.killEvents?.map((killEvent): KillEvent => {
+    round.playerStats.flatMap(playerStats =>
+      playerStats.kills.map((killEvent): KillEvent => {
         const half = (roundIndex < 12 && teamColor === "red") || (roundIndex >= 12 && teamColor === "blue") ? "attack" : "defense";
-        const timeInRound = killEvent.killTimeInRound!
+        const timeInRound = killEvent.timeSinceRoundStartMillis
         const victim = {
-          x: killEvent.victimDeathLocation!.x!,
-          y: killEvent.victimDeathLocation!.y!,
-          team: killEvent.victimTeam?.toLowerCase() === teamColor ? "friendly" as const : "hostile" as const,
-          name: killEvent.victimDisplayName!
+          x: killEvent.victimLocation.x,
+          y: killEvent.victimLocation.y,
+          team: killEvent.victimTeam.toLowerCase() === teamColor ? "friendly" as const : "hostile" as const,
+          name: killEvent.victimPuuid
         }
-        const killer = killEvent.playerLocationsOnKill
-          ?.filter(otherPlayer => otherPlayer.playerPuuid === killEvent.killerPuuid)
+        const killer = killEvent.playerLocations
+          ?.filter(otherPlayer => otherPlayer.puuid === playerStats.puuid)
           .map(otherPlayer => ({
-            x: otherPlayer.location!.x!,
-            y: otherPlayer.location!.y!,
-            team: otherPlayer.playerTeam?.toLowerCase() === teamColor ? "friendly" as const : "hostile" as const,
-            name: otherPlayer.playerDisplayName!
+            x: otherPlayer.location.x,
+            y: otherPlayer.location.y,
+            team: otherPlayer.team.toLowerCase() === teamColor ? "friendly" as const : "hostile" as const,
+            name: otherPlayer.puuid
           }))
           .find(() => true)!
         return {

@@ -89,13 +89,8 @@ export default function Home() {
                       setTeamBMatches(prev => [...prev, stats]);
                     }
                   } catch (e) {
-                    if (e && typeof e === "object" && "code" in e && e.code === 429) {
-                      await new Promise(resolve => setTimeout(resolve, 9000 + Math.random() * 2000));
-                      await addMatch(matchId, team);
-                    } else {
-                      setUnretrievableMatches(prev => (prev ?? 0) + 1);
-                      console.warn(e);
-                    }
+                    setUnretrievableMatches(prev => (prev ?? 0) + 1);
+                    console.warn(e);
                   }
                 }
 

@@ -1,5 +1,7 @@
 import { isDefined } from "./util";
-import { Affinities, DefaultApi, Match, PremierConferences, V1PartialPremierTeam, createConfiguration } from "./valorant-api";
+import { Affinities, DefaultApi, PremierConferences, V1PartialPremierTeam, createConfiguration } from "./valorant-api";
+import { Match } from "@/app/api/types"
+import retry from "async-retry";
 
 const config = createConfiguration();
 const api = new DefaultApi(config);
@@ -8,8 +10,17 @@ const matchCache = new Map<string, Match>();
 
 export async function getMatch(matchId: string): Promise<Match> {
   if (!matchCache.has(matchId)) {
-    const response = await api.valorantV2MatchMatchIdGet(matchId);
-    matchCache.set(matchId, response.data!);
+    const match = await retry(async (bail) => {
+      const response = await fetch(`/api/match?matchId=${matchId}`);
+      if (response.status === 200) {
+        return await response.json();
+      } else if (response.status === 429 || response.status >= 500) {
+        throw Error();
+      } else {
+        bail(new Error("Unretryable status " + response.status));
+      }
+    });
+    matchCache.set(matchId, match);
   }
   return matchCache.get(matchId)!;
 }
