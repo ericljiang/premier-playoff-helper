@@ -5,6 +5,8 @@ import { z } from "zod";
 export const runtime = "edge";
 
 const HENRIK_API_KEY = process.env.HENRIK_API_KEY;
+console.log(HENRIK_API_KEY ? "HENRIK_API_KEY found" : "HENRIK_API_KEY not found");
+
 const endpoint = new URL("https://api.henrikdev.xyz");
 const matchUrl = new URL("valorant/v2/match/", endpoint);
 
