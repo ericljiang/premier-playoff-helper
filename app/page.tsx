@@ -32,12 +32,6 @@ export default function Home() {
       />
       <section className="flex flex-col items-center justify-center gap-8">
 
-        <Snippet hideCopyButton hideSymbol color="primary" size="sm">
-          <span>The API used to retrieve Valorant data is</span>
-          <span>rate limited to 30 requests per minute.</span>
-          <span>Loading matchups may be slow.</span>
-        </Snippet>
-
         <h1 className={title()}>Select your Premier division</h1>
 
         <DivisionSelect
