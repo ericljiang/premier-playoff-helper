@@ -4,6 +4,7 @@ import { z } from "zod";
 
 export const runtime = "edge";
 
+const HENRIK_API_KEY = process.env.HENRIK_API_KEY;
 const endpoint = new URL("https://api.henrikdev.xyz");
 const matchUrl = new URL("valorant/v2/match/", endpoint);
 
@@ -74,11 +75,17 @@ export async function GET(request: NextRequest): Promise<NextResponse<Match | Er
     });
   }
 
-  const response = await fetch(new URL(matchId, matchUrl));
+  const response = await fetch(new URL(matchId, matchUrl), {
+    headers: HENRIK_API_KEY ? {
+      Authorization: HENRIK_API_KEY
+    } : undefined
+  });
 
   if (response.status !== 200) {
+    console.error(response.status);
+    console.error(await response.text());
     return NextResponse.json({
-      error: "unknown"
+      error: `Unexpected response status ${response.status}`
     }, {
       status: response.status,
     });
