@@ -29,6 +29,7 @@ export function TeamSelect({ teams, onSelect, isLoading }: TeamSelectProps) {
       className="flex w-full flex-wrap md:flex-nowrap gap-4 items-center justify-center"
     >
       <Autocomplete
+        size={"lg"}
         label="Your team"
         selectedKey={teamA ?? null}
         onSelectionChange={key => setTeamA(key as string)}
@@ -41,6 +42,7 @@ export function TeamSelect({ teams, onSelect, isLoading }: TeamSelectProps) {
       </Autocomplete>
       vs
       <Autocomplete
+        size={"lg"}
         label="Opponent team"
         selectedKey={teamB ?? null}
         onSelectionChange={key => setTeamB(key as string)}

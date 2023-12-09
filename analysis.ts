@@ -127,7 +127,7 @@ async function computeStats(matchId: string, teamId: string): Promise<MatchStats
           name: killEvent.victimPuuid
         }
         const killer = killEvent.playerLocations
-          ?.filter(otherPlayer => otherPlayer.puuid === playerStats.puuid)
+          .filter(otherPlayer => otherPlayer.puuid === playerStats.puuid)
           .map(otherPlayer => ({
             x: otherPlayer.location.x,
             y: otherPlayer.location.y,

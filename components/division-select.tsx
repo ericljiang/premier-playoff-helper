@@ -65,6 +65,7 @@ export function DivisionSelect({ onSelect, isLoading }: DivisionSelectProps) {
       className="flex w-full flex-wrap md:flex-nowrap gap-4 items-center justify-center"
     >
       <Autocomplete
+        size={"lg"}
         label="Zone"
         selectedKey={conference ?? null}
         onSelectionChange={key => setConference(key as PremierConferences)}
@@ -77,6 +78,7 @@ export function DivisionSelect({ onSelect, isLoading }: DivisionSelectProps) {
           ))}
       </Autocomplete>
       <Autocomplete
+        size={"lg"}
         label="Division"
         selectedKey={division ?? null}
         onSelectionChange={key => setDivision(key as number)}
