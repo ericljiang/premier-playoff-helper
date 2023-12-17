@@ -1,3 +1,20 @@
+# Premier Playoff Helper
+
+## Development
+Clone the package and install dependencies:
+```sh
+npm install
+```
+
+Add secrets to `.env.local`.
+
+Start development server:
+```sh
+npm run dev
+```
+
+# OLD STUFF BELOW
+
 # Next.js & NextUI Template
 
 This is a template for creating applications using Next.js 13 (app directory) and NextUI (v2).

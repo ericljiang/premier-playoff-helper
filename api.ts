@@ -57,5 +57,9 @@ export async function getPremierMatchHistory(teamId: string): Promise<string[]> 
   if (response.status !== 200 || !response.data || !response.data.leagueMatches) {
     throw Error();
   }
-  return response.data.leagueMatches.map(match => match.id).filter(isDefined);
+  return response.data.leagueMatches
+    // matches before Premier's Launch stage 404 in both Riot and Henrik APIs
+    .filter(match => match.startedAt && match.startedAt > new Date(2023, 8, 29))
+    .map(match => match.id)
+    .filter(isDefined);
 }
