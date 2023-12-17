@@ -14,13 +14,13 @@ export default function TermsOfService() {
       </p>
       <p className="text-left">
         You may not use this site for:
-        <ul className="list-disc list-inside">
-          <li>Betting or gambling</li>
-          <li>Harrassing players</li>
-          <li>Gaining an unfair advantage in game</li>
-          <li>Breaking the law</li>
-        </ul>
       </p>
+      <ul className="text-left list-disc list-inside">
+        <li>Betting or gambling</li>
+        <li>Harrassing players</li>
+        <li>Gaining an unfair advantage in game</li>
+        <li>Breaking the law</li>
+      </ul>
       <h2 className={subtitle()}>Riot Sign On</h2>
       <p className="text-left">
         We only show stats for individual players if they have opted in by
