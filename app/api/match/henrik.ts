@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { Match } from "../types";
+import { henrikRootUrl } from "../environment";
 
-const endpoint = new URL("https://api.henrikdev.xyz");
-const matchUrl = new URL("valorant/v2/match/", endpoint);
+const matchUrl = new URL("valorant/v2/match/", henrikRootUrl);
 
 const henrikTeamSchema = z.object({
   has_won: z.boolean(),

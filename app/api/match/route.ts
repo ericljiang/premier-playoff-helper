@@ -2,13 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { ErrorResponseBody, Match } from "../types";
 import { retrieveMatchFromHenrik } from "./henrik";
 import { retrieveMatchFromRiot } from "./riot";
+import { riotApiKey, henrikApiKey } from "../environment";
 
 export const runtime = "edge";
-
-const HENRIK_API_KEY = process.env.HENRIK_API_KEY;
-const RIOT_API_KEY = process.env.RIOT_API_KEY;
-console.log(HENRIK_API_KEY ? "HENRIK_API_KEY found" : "HENRIK_API_KEY not found");
-console.log(RIOT_API_KEY ? "RIOT_API_KEY found" : "RIOT_API_KEY not found");
 
 export async function GET(request: NextRequest): Promise<NextResponse<Match | ErrorResponseBody>> {
   const matchId = request.nextUrl.searchParams.get("matchId");
@@ -21,8 +17,8 @@ export async function GET(request: NextRequest): Promise<NextResponse<Match | Er
   }
 
   try {
-    if (RIOT_API_KEY) {
-      const match = await retrieveMatchFromRiot(matchId, RIOT_API_KEY);
+    if (riotApiKey) {
+      const match = await retrieveMatchFromRiot(matchId, riotApiKey);
       return NextResponse.json(match, {
         status: 200,
       });
@@ -33,7 +29,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Match | Er
     console.error("Failed to call Riot API for match, falling back to Henrik API.");
     console.error(e1);
     try {
-      const match = await retrieveMatchFromHenrik(matchId, HENRIK_API_KEY);
+      const match = await retrieveMatchFromHenrik(matchId, henrikApiKey);
       return NextResponse.json(match, {
         status: 200,
       });

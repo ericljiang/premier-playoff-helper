@@ -1,8 +1,11 @@
+import { riotRootUrl } from "../environment";
 import { Match, Team } from "../types";
 import { z } from "zod";
 
+const matchUrl = new URL("val/match/v1/matches", riotRootUrl);
+
 export async function retrieveMatchFromRiot(matchId: string, apiKey: string): Promise<Match> {
-  const response = await fetch(`https://na.api.riotgames.com/val/match/v1/matches/${matchId}`, {
+  const response = await fetch(new URL(matchId, matchUrl), {
     headers: {
       "X-Riot-Token": apiKey
     }
