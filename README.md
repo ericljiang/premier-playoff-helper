@@ -6,7 +6,11 @@ Clone the package and install dependencies:
 npm install
 ```
 
-Add secrets to `.env.local`.
+Add secrets to `.env.local`:
+```
+HENRIK_API_KEY=...
+RIOT_API_KEY=...
+```
 
 Start development server:
 ```sh

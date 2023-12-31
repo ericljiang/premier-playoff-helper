@@ -6,7 +6,7 @@ type Player = {
   character: string;
 };
 
-type Team = "red" | "blue";
+export type Team = "red" | "blue";
 
 type Location = {
   x: number;
@@ -39,6 +39,7 @@ export type Match = {
         victimTeam: Team;
         victimLocation: Location;
         playerLocations: Array<{
+          // TODO add view radians
           puuid: string;
           team: Team;
           location: Location;
