@@ -15,10 +15,12 @@ export async function getMatch(matchId: string): Promise<Match> {
       if (response.status === 200) {
         return await response.json();
       } else if (response.status === 429 || response.status >= 500) {
-        throw Error();
+        throw Error(`Got response code ${response.status} for https://tracker.gg/valorant/match/${matchId}`);
       } else {
         bail(new Error("Unretryable status " + response.status));
       }
+    }, {
+      retries: 2
     });
     matchCache.set(matchId, match);
   }
