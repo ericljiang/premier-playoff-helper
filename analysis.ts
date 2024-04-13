@@ -36,7 +36,7 @@ export type MapStats = Omit<MatchStats, "teamComposition"> & {
 }
 
 const cachedMatchStatsSchema = z.object({
-  version: z.literal("2023-11-10c"),
+  version: z.literal("2024-04-13"),
   stats: z.object({
     map: z.string(),
     won: z.number(),
@@ -82,7 +82,7 @@ function getCachedStats(key: string): MatchStats | undefined {
 
 function cacheStats(key: string, stats: MatchStats): void {
   const valueToCache: z.infer<typeof cachedMatchStatsSchema> = {
-    version: "2023-11-10c",
+    version: "2024-04-13",
     stats
   };
   try {
