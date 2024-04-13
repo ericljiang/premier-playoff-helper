@@ -5,13 +5,14 @@ import { z } from "zod";
 const matchUrl = new URL("val/match/v1/matches/", riotRootUrl);
 
 export async function retrieveMatchFromRiot(matchId: string, apiKey: string): Promise<Match> {
-  const response = await fetch(new URL(matchId, matchUrl), {
+  const requestUrl = new URL(matchId, matchUrl);
+  const response = await fetch(requestUrl, {
     headers: {
       "X-Riot-Token": apiKey
     }
   });
   if (response.status !== 200) {
-    throw Error(response.status.toString()); // TODO
+    throw Error(`Request to ${requestUrl} failed: ${await response.text()}`);
   }
   const riotMatch = riotMatchSchema.parse(await response.json());
   return convertMatch(riotMatch);
@@ -26,18 +27,21 @@ function convertMatch(riotMatch: z.infer<typeof riotMatchSchema>): Match {
       return index;
     },
     new Map<string, { team: Team; }>());
+  const redTeam = findOrThrow(riotMatch.teams, t => t.teamId.toLowerCase() === "red");
+  const blueTeam = findOrThrow(riotMatch.teams, t => t.teamId.toLowerCase() === "blue");
   return {
     map: riotMatch.matchInfo.mapId,
     teams: {
       red: {
-        won: findOrThrow(riotMatch.teams, t => t.teamId.toLowerCase() === "red").won,
-        roundsWon: 0,
-        roundsLost: 0
+        won: redTeam.won,
+        roundsWon: redTeam.roundsWon,
+        roundsLost: redTeam.roundsPlayed - redTeam.roundsWon,
+        premierTeamId: undefined
       },
       blue: {
-        won: findOrThrow(riotMatch.teams, t => t.teamId.toLowerCase() === "blue").won,
-        roundsWon: 0,
-        roundsLost: 0,
+        won: blueTeam.won,
+        roundsWon: blueTeam.roundsWon,
+        roundsLost: blueTeam.roundsPlayed - blueTeam.roundsWon,
         premierTeamId: undefined
       }
     },

@@ -108,13 +108,14 @@ function convertMatch(henrikMatch: z.infer<typeof henrikMatchResponseSchema>): M
 }
 
 export async function retrieveMatchFromHenrik(matchId: string, apiKey: string | undefined): Promise<Match> {
-  const response = await fetch(new URL(matchId, matchUrl), {
+  const requestUrl = new URL(matchId, matchUrl);
+  const response = await fetch(requestUrl, {
     headers: apiKey ? {
       Authorization: apiKey
     } : undefined
   });
   if (response.status !== 200) {
-    throw Error(response.status.toString()); // TODO
+    throw Error(`Request to ${requestUrl} failed: ${await response.text()}`);
   }
   const henrikMatch = henrikMatchResponseSchema.parse(await response.json());
   return convertMatch(henrikMatch);

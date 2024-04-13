@@ -19,6 +19,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<Match | Er
   try {
     if (riotApiKey) {
       const match = await retrieveMatchFromRiot(matchId, riotApiKey);
+      console.log(`Successfully retrieved match ${matchId} from Riot API`)
       return NextResponse.json(match, {
         status: 200,
       });
@@ -26,14 +27,16 @@ export async function GET(request: NextRequest): Promise<NextResponse<Match | Er
       throw Error("Environment variable RIOT_API_KEY not defined");
     }
   } catch (e1) {
-    console.error("Failed to call Riot API for match, falling back to Henrik API.");
+    console.error(`Failed to call Riot API for match ${matchId}, falling back to Henrik API.`);
     console.error(e1);
     try {
       const match = await retrieveMatchFromHenrik(matchId, henrikApiKey);
+      console.log(`Successfully retrieved match ${matchId} from Henrik API`)
       return NextResponse.json(match, {
         status: 200,
       });
     } catch (e2) {
+      console.error(`Failed to call Henrik API for match ${matchId}`);
       console.error(e2);
       return NextResponse.json({
         error: (e2 instanceof Error) ? e2.message : "Unknown"
