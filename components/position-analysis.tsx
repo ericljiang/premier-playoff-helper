@@ -1,22 +1,10 @@
 import * as Plot from "@observablehq/plot";
 import { KillEvent } from "@/analysis";
 import { PropsWithChildren, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { maps } from "@/resources/maps.json"
-import { z } from "zod";
 import { Card, CardBody, CardHeader } from "@nextui-org/card";
 import { Slider } from "@nextui-org/slider";
 import { Tab, Tabs } from "@nextui-org/tabs";
-
-const mapSchema = z.object({
-  displayName: z.string(),
-  displayIcon: z.string(),
-  xMultiplier: z.number(),
-  yMultiplier: z.number(),
-  xScalarToAdd: z.number(),
-  yScalarToAdd: z.number()
-})
-
-type MapMetadata = z.infer<typeof mapSchema>
+import { useMaps } from "@/app/accessor/valorant-api";
 
 type PositionAnalysisProps = {
   map?: string;
@@ -24,6 +12,7 @@ type PositionAnalysisProps = {
 }
 
 export function PositionAnalysis(props: PositionAnalysisProps) {
+  const maps = useMaps();
   const [selectedKillsOrDeaths, setSelectedKillsOrDeaths] = useState<"kills" | "deaths">("kills");
   const [selectedHalf, setSelectedHalf] = useState<"attack" | "defense">("attack");
   const [timeRange, setTimeRange] = useState<[number, number]>([0, 100]);
@@ -35,10 +24,9 @@ export function PositionAnalysis(props: PositionAnalysisProps) {
     if (!props.killEvents) {
       return <ErrorMessage>No data for {props.map}</ErrorMessage>;
     }
-    const mapMetadata = maps.filter((map): map is MapMetadata => mapSchema.safeParse(map).success)
-      .find(map => map.displayName === props.map)
+    const mapMetadata = maps?.find(map => map.mapUrl === props.map)
     if (!mapMetadata || !mapMetadata.displayIcon) {
-      return <ErrorMessage>{props.map} is not yet supported :(</ErrorMessage>;
+      return <ErrorMessage>{mapMetadata?.displayName ?? props.map} is not yet supported :(</ErrorMessage>;
     }
     return (
       <Heatmap
@@ -116,7 +104,13 @@ function Heatmap(
     selectedHalf,
     timeRange
   }: {
-    mapMetadata: MapMetadata;
+      mapMetadata: {
+        displayIcon: string | null,
+        xMultiplier: number,
+        yMultiplier: number,
+        xScalarToAdd: number,
+        yScalarToAdd: number;
+      };
     killEvents: KillEvent[];
     selectedKillsOrDeaths: "kills" | "deaths";
     selectedHalf: "attack" | "defense";

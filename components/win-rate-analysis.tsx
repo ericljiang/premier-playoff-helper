@@ -3,6 +3,8 @@ import { renderPercentage } from "@/util";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
 import { memo } from "react";
 import { HorizontalScrollShadow } from "./horizontal-scroll-shadow";
+import { useMaps } from "@/app/accessor/valorant-api";
+import { Skeleton } from "@nextui-org/skeleton";
 
 export type WinRateAnalysisProps = {
   teamAStats: Map<string, MapStats>;
@@ -11,6 +13,7 @@ export type WinRateAnalysisProps = {
 }
 
 export const WinRateAnalysis = memo(function WinRateAnalysis(props: WinRateAnalysisProps) {
+  const maps = useMaps()
   return (
     <Table
       BaseComponent={HorizontalScrollShadow}
@@ -66,7 +69,9 @@ export const WinRateAnalysis = memo(function WinRateAnalysis(props: WinRateAnaly
           return (
             <TableRow key={map}>
               <TableCell>
-                {map}
+                <Skeleton isLoaded={!!maps}>
+                  {maps?.find(m => m.mapUrl === map)?.displayName ?? map}
+                </Skeleton>
               </TableCell>
               <TableCell>
                 {renderWinRateComparison(
