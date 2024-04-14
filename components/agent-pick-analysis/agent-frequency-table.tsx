@@ -1,14 +1,15 @@
-import { Avatar } from "@nextui-org/avatar";
 import { Button } from "@nextui-org/button";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/table";
 import { useState } from "react";
 import { z } from "zod";
-import { agentIcons } from "@/resources/agent-icons.json";
 import { renderPercentage } from "@/util";
 import { AgentPickAnalysisProps } from "./agent-pick-analysis";
 import { HorizontalScrollShadow } from "../horizontal-scroll-shadow";
+import { AgentAvatar } from "../agent-avatar";
+import { useAgents } from "@/app/accessor/valorant-api";
 
 export function AgentFrequencyTable({ teamCompositions, rowLimit }: AgentPickAnalysisProps & { rowLimit: number; }) {
+  const agents = useAgents();
   const [showMore, setShowMore] = useState(false);
 
   const numMatches = Array.from(teamCompositions.entries())
@@ -51,14 +52,11 @@ export function AgentFrequencyTable({ teamCompositions, rowLimit }: AgentPickAna
           .map(([agent, n]) =>
             <TableRow key={agent}>
               <TableCell className="flex gap-3 items-center">
-                <Avatar
+                <AgentAvatar
                   key={agent}
-                  name={agent}
-                  showFallback
-                  radius="sm"
-                  src={agentIcons.find(e => e.displayName === agent)?.displayIcon}
+                  agentId={agent}
                 />
-                {agent}
+                {agents?.find(a => a.uuid === agent)?.displayName ?? agent}
               </TableCell>
               <TableCell>
                 {renderPercentage(n / numMatches)}

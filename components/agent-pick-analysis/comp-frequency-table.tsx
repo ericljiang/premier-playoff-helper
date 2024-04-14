@@ -1,12 +1,11 @@
-import { Avatar } from "@nextui-org/avatar";
 import { Button } from "@nextui-org/button";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/table";
 import { useState } from "react";
 import { z } from "zod";
-import { agentIcons } from "@/resources/agent-icons.json";
 import { renderPercentage } from "@/util";
 import { AgentPickAnalysisProps } from "./agent-pick-analysis";
 import { HorizontalScrollShadow } from "../horizontal-scroll-shadow";
+import { AgentAvatar } from "../agent-avatar";
 
 export function CompFrequencyTable({ teamCompositions, rowLimit }: AgentPickAnalysisProps & { rowLimit: number; }) {
   const [showMore, setShowMore] = useState(false);
@@ -43,12 +42,9 @@ export function CompFrequencyTable({ teamCompositions, rowLimit }: AgentPickAnal
             <TableRow key={index}>
               <TableCell className="flex gap-3 items-center">
                 {z.array(z.string()).parse(JSON.parse(comp)).map(agent =>
-                  <Avatar
+                  <AgentAvatar
                     key={agent}
-                    name={agent}
-                    showFallback
-                    radius="sm"
-                    src={agentIcons.find(e => e.displayName === agent)?.displayIcon}
+                    agentId={agent}
                   />
                 )}
               </TableCell>
