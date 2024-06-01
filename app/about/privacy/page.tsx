@@ -1,5 +1,5 @@
 import { title } from "@/components/primitives";
-import { Link } from "@nextui-org/link";
+import { Link } from "@nextui-org/react";
 
 export default function PrivacyPolicy() {
   return (

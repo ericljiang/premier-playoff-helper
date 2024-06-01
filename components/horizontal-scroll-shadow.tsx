@@ -1,4 +1,4 @@
-import { ScrollShadow, ScrollShadowProps } from "@nextui-org/scroll-shadow";
+import { ScrollShadow, ScrollShadowProps } from "@nextui-org/react";
 import { forwardRef } from "react";
 
 /**

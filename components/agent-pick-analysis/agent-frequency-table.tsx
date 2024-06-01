@@ -1,12 +1,11 @@
-import { Button } from "@nextui-org/button";
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/table";
+import { useAgents } from "@/app/accessor/valorant-api";
+import { renderPercentage } from "@/util";
+import { Button, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
 import { useState } from "react";
 import { z } from "zod";
-import { renderPercentage } from "@/util";
-import { AgentPickAnalysisProps } from "./agent-pick-analysis";
-import { HorizontalScrollShadow } from "../horizontal-scroll-shadow";
 import { AgentAvatar } from "../agent-avatar";
-import { useAgents } from "@/app/accessor/valorant-api";
+import { HorizontalScrollShadow } from "../horizontal-scroll-shadow";
+import { AgentPickAnalysisProps } from "./agent-pick-analysis";
 
 export function AgentFrequencyTable({ teamCompositions, rowLimit }: AgentPickAnalysisProps & { rowLimit: number; }) {
   const agents = useAgents();

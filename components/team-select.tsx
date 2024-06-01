@@ -1,7 +1,6 @@
 "use client"; // https://github.com/nextui-org/nextui/issues/1403
 import { V1PartialPremierTeam } from "@/valorant-api";
-import { Autocomplete, AutocompleteItem } from "@nextui-org/autocomplete";
-import { Button } from "@nextui-org/button";
+import { Autocomplete, AutocompleteItem, Button } from "@nextui-org/react";
 import { useEffect, useState } from "react";
 
 type Inputs = {

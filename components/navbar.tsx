@@ -1,23 +1,23 @@
 import {
-  Navbar as NextUINavbar,
+  Link,
   NavbarContent,
-  NavbarMenu,
-  NavbarMenuToggle,
   NavbarItem,
+  NavbarMenu,
   NavbarMenuItem,
-} from "@nextui-org/navbar";
-import { Link } from "@nextui-org/link";
+  NavbarMenuToggle,
+  Navbar as NextUINavbar,
+} from "@nextui-org/react";
 
-import { link as linkStyles } from "@nextui-org/theme";
+import { link as linkStyles } from "@nextui-org/react";
 
 import { siteConfig } from "@/config/site";
-import NextLink from "next/link";
 import clsx from "clsx";
+import NextLink from "next/link";
 
-import { ThemeSwitch } from "@/components/theme-switch";
 import {
   GithubIcon,
 } from "@/components/icons";
+import { ThemeSwitch } from "@/components/theme-switch";
 
 
 export const Navbar = () => {

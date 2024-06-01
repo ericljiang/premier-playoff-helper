@@ -1,10 +1,9 @@
 import { MapStats, estimateWinProbability, winLossRate } from "@/analysis";
+import { useMaps } from "@/app/accessor/valorant-api";
 import { renderPercentage } from "@/util";
-import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/table";
+import { Skeleton, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
 import { memo } from "react";
 import { HorizontalScrollShadow } from "./horizontal-scroll-shadow";
-import { useMaps } from "@/app/accessor/valorant-api";
-import { Skeleton } from "@nextui-org/skeleton";
 
 export type WinRateAnalysisProps = {
   teamAStats: Map<string, MapStats>;

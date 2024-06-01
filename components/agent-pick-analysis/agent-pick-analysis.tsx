@@ -1,8 +1,8 @@
-import { Tabs, Tab } from "@nextui-org/tabs";
+import { Tab, Tabs } from "@nextui-org/react";
+import { Key } from '@react-types/shared';
 import { useState } from "react";
 import { AgentFrequencyTable } from "./agent-frequency-table";
 import { CompFrequencyTable } from "./comp-frequency-table";
-import { Key } from '@react-types/shared';
 
 export type AgentPickAnalysisProps = {
   teamCompositions: Map<string, number>;

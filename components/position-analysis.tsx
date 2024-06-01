@@ -1,10 +1,8 @@
-import * as Plot from "@observablehq/plot";
 import { KillEvent } from "@/analysis";
-import { PropsWithChildren, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Card, CardBody, CardHeader } from "@nextui-org/card";
-import { Slider } from "@nextui-org/slider";
-import { Tab, Tabs } from "@nextui-org/tabs";
 import { useMaps } from "@/app/accessor/valorant-api";
+import { Card, CardBody, CardHeader, Slider, Tab, Tabs } from "@nextui-org/react";
+import * as Plot from "@observablehq/plot";
+import { PropsWithChildren, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 type PositionAnalysisProps = {
   map?: string;
@@ -104,13 +102,13 @@ function Heatmap(
     selectedHalf,
     timeRange
   }: {
-      mapMetadata: {
-        displayIcon: string | null,
-        xMultiplier: number,
-        yMultiplier: number,
-        xScalarToAdd: number,
-        yScalarToAdd: number;
-      };
+    mapMetadata: {
+      displayIcon: string | null,
+      xMultiplier: number,
+      yMultiplier: number,
+      xScalarToAdd: number,
+      yScalarToAdd: number;
+    };
     killEvents: KillEvent[];
     selectedKillsOrDeaths: "kills" | "deaths";
     selectedHalf: "attack" | "defense";

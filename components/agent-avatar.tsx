@@ -1,6 +1,5 @@
 import { useAgents } from "@/app/accessor/valorant-api";
-import { Avatar } from "@nextui-org/avatar";
-import { Skeleton } from "@nextui-org/skeleton";
+import { Avatar, Skeleton } from "@nextui-org/react";
 
 export type AgentAvatarProps = {
   agentId: string;

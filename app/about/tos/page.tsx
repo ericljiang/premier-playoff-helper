@@ -1,5 +1,5 @@
 import { subtitle, title } from "@/components/primitives";
-import { Link } from "@nextui-org/link";
+import { Link } from "@nextui-org/react";
 
 export default function TermsOfService() {
   return (

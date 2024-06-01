@@ -1,4 +1,4 @@
-import { Progress } from "@nextui-org/progress";
+import { Progress } from "@nextui-org/react";
 
 export function MatchLoadingProgress(props: {
   loaded: number,

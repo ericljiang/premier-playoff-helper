@@ -7,7 +7,7 @@ import { getPremierConference, getPremierMatchHistory } from "@/api";
 import { TeamSelect } from "@/components/team-select";
 import { MatchupAnalysis } from "@/components/matchup-analysis";
 import { MatchStats, getStats } from "@/analysis";
-import { Snippet } from "@nextui-org/snippet";
+import { Snippet } from "@nextui-org/react";
 import { Toaster, toast } from "sonner";
 import { useTheme } from "next-themes";
 import he from "he";
