@@ -1,0 +1,52 @@
+diff --git a/node_modules/@extendslcc/trpc-panel/lib/index.js b/node_modules/@extendslcc/trpc-panel/lib/index.js
+index 0b3c803..1909d3c 100644
+--- a/node_modules/@extendslcc/trpc-panel/lib/index.js
++++ b/node_modules/@extendslcc/trpc-panel/lib/index.js
+@@ -109,6 +109,12 @@ const parseZodEnumDef = (def, refs) => {
+     return Object.assign({ type: "enum", enumValues: values }, nodePropertiesFromRef(refs));
+ };
+ 
++const parseZodNativeEnumDef = (def, refs) => {
++    const values = Object.values(def.values);
++    refs.addDataFunctions.addDescriptionIfExists(def, refs);
++    return Object.assign({ type: "enum", enumValues: values }, nodePropertiesFromRef(refs));
++};
++
+ const parseZodLiteralDef = (def, refs) => {
+     refs.addDataFunctions.addDescriptionIfExists(def, refs);
+     return Object.assign({ type: "literal", value: def.value }, nodePropertiesFromRef(refs));
+@@ -194,6 +200,8 @@ const zodSelectorFunction = (def, references) => {
+             return parseZodDiscriminatedUnionDef(def, references);
+         case zod.ZodFirstPartyTypeKind.ZodEnum:
+             return parseZodEnumDef(def, references);
++        case zod.ZodFirstPartyTypeKind.ZodNativeEnum:
++            return parseZodNativeEnumDef(def, references);
+         case zod.ZodFirstPartyTypeKind.ZodLiteral:
+             return parseZodLiteralDef(def, references);
+         case zod.ZodFirstPartyTypeKind.ZodNumber:
+diff --git a/node_modules/@extendslcc/trpc-panel/lib/index.mjs b/node_modules/@extendslcc/trpc-panel/lib/index.mjs
+index 8e0fe77..40a1ade 100644
+--- a/node_modules/@extendslcc/trpc-panel/lib/index.mjs
++++ b/node_modules/@extendslcc/trpc-panel/lib/index.mjs
+@@ -107,6 +107,12 @@ const parseZodEnumDef = (def, refs) => {
+     return Object.assign({ type: "enum", enumValues: values }, nodePropertiesFromRef(refs));
+ };
+ 
++const parseZodNativeEnumDef = (def, refs) => {
++    const values = Object.values(def.values);
++    refs.addDataFunctions.addDescriptionIfExists(def, refs);
++    return Object.assign({ type: "enum", enumValues: values }, nodePropertiesFromRef(refs));
++};
++
+ const parseZodLiteralDef = (def, refs) => {
+     refs.addDataFunctions.addDescriptionIfExists(def, refs);
+     return Object.assign({ type: "literal", value: def.value }, nodePropertiesFromRef(refs));
+@@ -192,6 +198,8 @@ const zodSelectorFunction = (def, references) => {
+             return parseZodDiscriminatedUnionDef(def, references);
+         case ZodFirstPartyTypeKind.ZodEnum:
+             return parseZodEnumDef(def, references);
++        case ZodFirstPartyTypeKind.ZodNativeEnum:
++            return parseZodNativeEnumDef(def, references);
+         case ZodFirstPartyTypeKind.ZodLiteral:
+             return parseZodLiteralDef(def, references);
+         case ZodFirstPartyTypeKind.ZodNumber:
