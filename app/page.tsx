@@ -3,7 +3,7 @@ import { title } from "@/components/primitives";
 import { V1PartialPremierTeam } from "@/valorant-api";
 import { useState } from "react";
 import { DivisionSelect } from "@/components/division-select";
-import { getPremierConference, getPremierMatchHistory } from "@/api";
+import { getPremierConferenceTrpc as getPremierConference, getPremierMatchHistoryTrpc as getPremierMatchHistory } from "@/api";
 import { TeamSelect } from "@/components/team-select";
 import { MatchupAnalysis } from "@/components/matchup-analysis";
 import { MatchStats, getStats } from "@/analysis";

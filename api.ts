@@ -3,6 +3,17 @@ import { Affinities, DefaultApi, PremierConferences, V1PartialPremierTeam, creat
 import { Match } from "@/app/api/types"
 import retry from "async-retry";
 
+import { createTRPCClient, httpBatchLink } from '@trpc/client';
+import type { AppRouter } from "./app/api/trpc/[trpc]/route";
+
+const client = createTRPCClient<AppRouter>({
+  links: [
+    httpBatchLink({
+      url: '/api/trpc',
+    }),
+  ],
+});
+
 const config = createConfiguration();
 const api = new DefaultApi(config);
 
@@ -27,6 +38,14 @@ export async function getMatch(matchId: string): Promise<Match> {
   return matchCache.get(matchId)!;
 }
 
+export async function getPremierConferenceTrpc(
+  conference: PremierConferences,
+  division: number
+): Promise<V1PartialPremierTeam[]> {
+  return await client.getPremierConference.query({ conference, division: Number(division) });
+}
+
+/** @deprecated */
 export async function getPremierConference(
   conference: PremierConferences,
   division: number
@@ -54,6 +73,11 @@ export async function getPremierConference(
   return response.data;
 }
 
+export async function getPremierMatchHistoryTrpc(teamId: string): Promise<string[]> {
+  return await client.getPremierMatchHistory.query({ teamId });
+}
+
+/** @deprecated */
 export async function getPremierMatchHistory(teamId: string): Promise<string[]> {
   const response = await api.valorantV1PremierTeamIdHistoryGet(teamId);
   if (response.status !== 200 || !response.data || !response.data.leagueMatches) {
