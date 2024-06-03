@@ -12,6 +12,8 @@ import { Toaster, toast } from "sonner";
 import { useTheme } from "next-themes";
 import he from "he";
 import { MatchLoadingProgress } from "@/components/match-loading-progress";
+import { SignIn } from "@/components/sign-in";
+import UserAvatar from "@/components/user-avatar";
 
 export default function Home() {
   const { theme } = useTheme()
@@ -31,6 +33,9 @@ export default function Home() {
         theme={theme === "dark" || theme === "light" || theme === "system" ? theme : undefined}
       />
       <section className="flex flex-col items-center justify-center gap-8">
+
+        <SignIn />
+        {/* <UserAvatar /> */}
 
         <h1 className={title()}>Select your Premier division</h1>
 
