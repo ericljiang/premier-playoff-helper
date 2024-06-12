@@ -18,7 +18,7 @@ import {
   GithubIcon,
 } from "@/components/icons";
 import { ThemeSwitch } from "@/components/theme-switch";
-import { SignIn } from "./sign-in";
+import { SignIn } from "./auth/sign-in-server";
 
 
 export const Navbar = () => {
