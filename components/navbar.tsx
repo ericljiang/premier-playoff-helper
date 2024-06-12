@@ -18,6 +18,7 @@ import {
   GithubIcon,
 } from "@/components/icons";
 import { ThemeSwitch } from "@/components/theme-switch";
+import { SignIn } from "./sign-in";
 
 
 export const Navbar = () => {
@@ -57,6 +58,7 @@ export const Navbar = () => {
             <GithubIcon className="text-default-500" />
           </Link>
           <ThemeSwitch />
+          <SignIn />
         </NavbarItem>
       </NavbarContent>
 
@@ -65,6 +67,7 @@ export const Navbar = () => {
           <GithubIcon className="text-default-500" />
         </Link>
         <ThemeSwitch />
+        <SignIn />
         <NavbarMenuToggle />
       </NavbarContent>
 

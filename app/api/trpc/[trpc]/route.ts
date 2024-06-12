@@ -1,17 +1,54 @@
 import { Affinities, DefaultApi, PremierConferences, createConfiguration } from '@/valorant-api';
-import { initTRPC } from '@trpc/server';
+import { TRPCError, initTRPC } from '@trpc/server';
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
+import { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
 import { z } from 'zod';
 import { henrikApiKey } from '../../environment';
 import { isDefined } from '@/util';
+import { auth } from '@/auth';
 
 export const dynamic = 'force-dynamic';
 
-const t = initTRPC.create();
+const t = initTRPC.context<typeof createContext>().create();
 const router = t.router;
-const publicProcedure = t.procedure;
 
-const config = createConfiguration({
+const createContext = async (_opts: FetchCreateContextFnOptions) => {
+  const session = await auth();
+  if (session?.accessToken) {
+    const res = await fetch("https://americas.api.riotgames.com/riot/account/v1/accounts/me", {
+      headers: {
+        "Authorization": `Bearer ${session.accessToken}`
+      }
+    });
+    const accountSchema = z.object({
+      puuid: z.string().min(1),
+      gameName: z.string().min(1),
+      tagLine: z.string().min(1)
+    });
+    if (res.status === 200) {
+      const account = accountSchema.safeParse(await res.json());
+      if (account.success) {
+        return {
+          session,
+          account: account.data
+        };
+      }
+    }
+  }
+  return {
+    session,
+  };
+}
+
+const publicProcedure = t.procedure;
+const rsoProtectedProcedure = t.procedure.use(async (opts) => {
+  if (!opts.ctx.session?.accessToken || !opts.ctx.account) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  }
+  return opts.next();
+})
+
+const henrikApiConfig = createConfiguration({
   promiseMiddleware: [
     {
       pre: (context) => {
@@ -22,7 +59,7 @@ const config = createConfiguration({
     }
   ]
 });
-const api = new DefaultApi(config);
+const henrikApi = new DefaultApi(henrikApiConfig);
 
 export const appRouter = router({
   ping: publicProcedure.query(() => "pong"),
@@ -48,7 +85,7 @@ export const appRouter = router({
         [PremierConferences.ApOceania]: Affinities.Ap,
         [PremierConferences.ApSouthAsia]: Affinities.Ap
       } satisfies Record<PremierConferences, Affinities>)[input.conference];
-      const response = await api.valorantV1PremierLeaderboardAffinityConferenceDivisionGet(affinity, input.conference, input.division);
+      const response = await henrikApi.valorantV1PremierLeaderboardAffinityConferenceDivisionGet(affinity, input.conference, input.division);
       if (response.status !== 200 || !response.data) {
         throw Error();
       }
@@ -59,7 +96,7 @@ export const appRouter = router({
       teamId: z.string()
     }))
     .query(async ({ input }) => {
-      const response = await api.valorantV1PremierTeamIdHistoryGet(input.teamId);
+      const response = await henrikApi.valorantV1PremierTeamIdHistoryGet(input.teamId);
       if (response.status !== 200 || !response.data || !response.data.leagueMatches) {
         throw Error();
       }
@@ -68,7 +105,9 @@ export const appRouter = router({
         .filter(match => match.startedAt && match.startedAt > new Date(2023, 8, 29))
         .map(match => match.id)
         .filter(isDefined);
-    })
+    }),
+  rsoTest: rsoProtectedProcedure
+    .query(({ ctx }) => `hello ${ctx.account?.gameName}`)
 });
 
 export type AppRouter = typeof appRouter;
@@ -77,7 +116,8 @@ function handler(request: Request) {
   return fetchRequestHandler({
     endpoint: "/api/trpc",
     req: request,
-    router: appRouter
+    router: appRouter,
+    createContext
   });
 }
 
