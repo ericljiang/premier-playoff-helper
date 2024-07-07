@@ -1,5 +1,5 @@
 "use client"; // https://github.com/nextui-org/nextui/issues/1403
-import { V1PartialPremierTeam } from "@/valorant-api";
+import { components } from "@/generated/henrik-4.0.0";
 import { Autocomplete, AutocompleteItem, Button } from "@nextui-org/react";
 import { useEffect, useState } from "react";
 
@@ -9,7 +9,7 @@ type Inputs = {
 };
 
 export type TeamSelectProps = {
-  teams: V1PartialPremierTeam[];
+  teams: components["schemas"]["v1_partial_premier_team"][];
   onSelect: (teams: Inputs) => void;
   isLoading: boolean
 };

@@ -9,7 +9,8 @@
     "lint": "next lint",
     "updateAgentIcons": "curl 'https://valorant-api.com/v1/agents?isPlayableCharacter=true' | jq '{agentIcons: [.data | .[] | {displayName, displayIcon}]}' > resources/agent-icons.json",
     "updateMaps": "curl 'https://valorant-api.com/v1/maps' | jq '{maps: [.data | .[] | {displayName, displayIcon, xMultiplier, xScalarToAdd, yMultiplier, yScalarToAdd}]}' > resources/maps.json",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "generate": "npx openapi-typescript openapi/henrik-4.0.0.yaml -o generated/henrik-4.0.0.d.ts"
   },
   "dependencies": {
     "@extendslcc/trpc-panel": "^1.3.6",
@@ -34,6 +35,7 @@
     "next": "14.0.4",
     "next-auth": "^5.0.0-beta.19",
     "next-themes": "^0.2.1",
+    "openapi-fetch": "^0.10.2",
     "patch-package": "^8.0.0",
     "postcss": "8.4.32",
     "react": "18.2.0",
@@ -42,13 +44,14 @@
     "sonner": "^1.2.4",
     "tailwind-variants": "^0.1.18",
     "tailwindcss": "3.3.6",
-    "typescript": "5.3.3",
     "whatwg-fetch": "^3.6.19",
     "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/async-retry": "^1.4.8",
     "@types/he": "^1.2.3",
-    "npm-check-updates": "^16.14.11"
+    "npm-check-updates": "^16.14.11",
+    "openapi-typescript": "^7.0.2",
+    "typescript": "^5.5.3"
   }
 }

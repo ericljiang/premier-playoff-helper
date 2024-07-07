@@ -4,5 +4,6 @@ console.log(henrikApiKey ? "HENRIK_API_KEY found" : "HENRIK_API_KEY not found");
 console.log(riotApiKey ? "RIOT_API_KEY found" : "RIOT_API_KEY not found");
 
 export const henrikRootUrl = new URL("https://api.henrikdev.xyz");
+export const henrikBetaUrl = new URL("https://beta.api.henrikdev.xyz");
 // TODO regionalize
 export const riotRootUrl = new URL("https://na.api.riotgames.com");

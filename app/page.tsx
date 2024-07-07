@@ -1,6 +1,5 @@
 "use client";
 import { title } from "@/components/primitives";
-import { V1PartialPremierTeam } from "@/valorant-api";
 import { useState } from "react";
 import { DivisionSelect } from "@/components/division-select";
 import { getPremierConferenceTrpc as getPremierConference, getPremierMatchHistoryTrpc as getPremierMatchHistory } from "@/api";
@@ -11,12 +10,13 @@ import { Toaster, toast } from "sonner";
 import { useTheme } from "next-themes";
 import he from "he";
 import { MatchLoadingProgress } from "@/components/match-loading-progress";
+import { components } from "@/generated/henrik-4.0.0";
 
 export default function Home() {
   const { theme } = useTheme()
 
   const [isLoadingTeams, setLoadingTeams] = useState<boolean>(false);
-  const [divisionTeams, setDivisionTeams] = useState<V1PartialPremierTeam[]>();
+  const [divisionTeams, setDivisionTeams] = useState<components["schemas"]["v1_partial_premier_team"][]>();
   const [isLoadingStats, setLoadingStats] = useState<boolean>(false);
   const [expectedMatches, setExpectedMatches] = useState<number>();
   const [unretrievableMatches, setUnretrievableMatches] = useState<number>();
