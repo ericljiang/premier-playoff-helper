@@ -20,7 +20,8 @@ export function PositionAnalysis(props: PositionAnalysisProps) {
       return <ErrorMessage>Select a map to see visualization</ErrorMessage>;
     }
     if (!props.killEvents) {
-      return <ErrorMessage>No data for {props.map}</ErrorMessage>;
+      const mapName = maps?.find(m => m.mapUrl === props.map)?.displayName ?? props.map
+      return <ErrorMessage>No data for {mapName}</ErrorMessage>;
     }
     const mapMetadata = maps?.find(map => map.mapUrl === props.map)
     if (!mapMetadata || !mapMetadata.displayIcon) {
