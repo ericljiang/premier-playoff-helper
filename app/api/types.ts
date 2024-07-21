@@ -3,6 +3,9 @@ export type ErrorResponseBody = {
 };
 
 type Player = {
+  puuid: string;
+  gameName: string;
+  tagLine: string;
   character: string;
 };
 

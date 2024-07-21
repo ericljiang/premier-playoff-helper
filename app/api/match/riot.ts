@@ -1,34 +1,62 @@
 import { riotRootUrl } from "../environment";
 import { Match, Team } from "../types";
 import { z } from "zod";
+import retry from "async-retry";
 
 const matchUrl = new URL("val/match/v1/matches/", riotRootUrl);
 
-export async function retrieveMatchFromRiot(matchId: string, apiKey: string): Promise<Match> {
+export async function retrieveMatchFromRiot(
+  matchId: string,
+  apiKey: string
+): Promise<Match> {
   const requestUrl = new URL(matchId, matchUrl);
-  const response = await fetch(requestUrl, {
-    headers: {
-      "X-Riot-Token": apiKey
+  const match = await retry(
+    async (bail) => {
+      const response = await fetch(requestUrl, {
+        headers: {
+          "X-Riot-Token": apiKey,
+        },
+      });
+      if (response.status === 200) {
+        console.log(`Successfully retrieved match ${matchId} from Riot API`);
+        return await response.json();
+      } else if (response.status === 429 || response.status >= 500) {
+        console.error(
+          `Got response code ${response.status} for https://tracker.gg/valorant/match/${matchId}`
+        );
+        throw Error(
+          `Request to ${requestUrl} failed: ${await response.text()}`
+        );
+      } else {
+        bail(new Error("Unretryable status " + response.status));
+      }
+    },
+    {
+      retries: 2,
     }
-  });
-  if (response.status !== 200) {
-    throw Error(`Request to ${requestUrl} failed: ${await response.text()}`);
-  }
-  const riotMatch = riotMatchSchema.parse(await response.json());
+  );
+  const riotMatch = riotMatchSchema.parse(match);
   return convertMatch(riotMatch);
 }
 
 function convertMatch(riotMatch: z.infer<typeof riotMatchSchema>): Match {
-  const playerIndex: Map<string, { team: Team; }> = riotMatch.players.reduce(
+  const playerIndex: Map<string, { team: Team }> = riotMatch.players.reduce(
     (index, player) => {
       index.set(player.puuid, {
-        team: parseTeam(player.teamId)
+        team: parseTeam(player.teamId),
       });
       return index;
     },
-    new Map<string, { team: Team; }>());
-  const redTeam = findOrThrow(riotMatch.teams, t => t.teamId.toLowerCase() === "red");
-  const blueTeam = findOrThrow(riotMatch.teams, t => t.teamId.toLowerCase() === "blue");
+    new Map<string, { team: Team }>()
+  );
+  const redTeam = findOrThrow(
+    riotMatch.teams,
+    (t) => t.teamId.toLowerCase() === "red"
+  );
+  const blueTeam = findOrThrow(
+    riotMatch.teams,
+    (t) => t.teamId.toLowerCase() === "blue"
+  );
   return {
     map: riotMatch.matchInfo.mapId,
     teams: {
@@ -36,44 +64,50 @@ function convertMatch(riotMatch: z.infer<typeof riotMatchSchema>): Match {
         won: redTeam.won,
         roundsWon: redTeam.roundsWon,
         roundsLost: redTeam.roundsPlayed - redTeam.roundsWon,
-        premierTeamId: undefined
+        premierTeamId: undefined,
       },
       blue: {
         won: blueTeam.won,
         roundsWon: blueTeam.roundsWon,
         roundsLost: blueTeam.roundsPlayed - blueTeam.roundsWon,
-        premierTeamId: undefined
-      }
+        premierTeamId: undefined,
+      },
     },
-    rounds: riotMatch.roundResults.map(roundResult => ({
+    rounds: riotMatch.roundResults.map((roundResult) => ({
       winningTeam: parseTeam(roundResult.winningTeam),
-      playerStats: roundResult.playerStats.map(playerStats => ({
+      playerStats: roundResult.playerStats.map((playerStats) => ({
         puuid: playerStats.puuid,
-        kills: playerStats.kills.map(kill => ({
+        kills: playerStats.kills.map((kill) => ({
           timeSinceRoundStartMillis: kill.timeSinceRoundStartMillis,
           victimPuuid: kill.victim,
           victimTeam: playerIndex.get(kill.victim)!.team, // TODO fail fast
           victimLocation: kill.victimLocation,
-          playerLocations: kill.playerLocations.map(l => ({
+          playerLocations: kill.playerLocations.map((l) => ({
             puuid: l.puuid,
             team: playerIndex.get(l.puuid)!.team,
-            location: l.location
-          }))
-        }))
-      }))
+            location: l.location,
+          })),
+        })),
+      })),
     })),
     players: {
       red: riotMatch.players
-        .filter(p => p.teamId.toLowerCase() === "red")
-        .map(p => ({
-          character: p.characterId // TODO translate to character name
+        .filter((p) => p.teamId.toLowerCase() === "red")
+        .map((p) => ({
+          puuid: p.puuid,
+          gameName: p.gameName,
+          tagLine: p.tagLine,
+          character: p.characterId, // TODO translate to character name
         })),
       blue: riotMatch.players
-        .filter(p => p.teamId.toLowerCase() === "blue")
-        .map(p => ({
-          character: p.characterId // TODO translate to character name
+        .filter((p) => p.teamId.toLowerCase() === "blue")
+        .map((p) => ({
+          puuid: p.puuid,
+          gameName: p.gameName,
+          tagLine: p.tagLine,
+          character: p.characterId, // TODO translate to character name
         })),
-    }
+    },
   };
 }
 
@@ -107,8 +141,8 @@ const riotMatchSchema = z.object({
     seasonId: z.string(),
     premierMatchInfo: z.object({
       premierSeasonId: z.string(),
-      premierEventId: z.string()
-    })
+      premierEventId: z.string(),
+    }),
   }),
   players: z.array(
     z.object({
@@ -129,14 +163,14 @@ const riotMatchSchema = z.object({
           grenadeCasts: z.number(),
           ability1Casts: z.number(),
           ability2Casts: z.number(),
-          ultimateCasts: z.number()
-        })
+          ultimateCasts: z.number(),
+        }),
       }),
       competitiveTier: z.number(),
       isObserver: z.boolean(),
       playerCard: z.string(),
       playerTitle: z.string(),
-      accountLevel: z.number()
+      accountLevel: z.number(),
     })
   ),
   coaches: z.array(z.unknown()),
@@ -146,7 +180,7 @@ const riotMatchSchema = z.object({
       won: z.boolean(),
       roundsPlayed: z.number(),
       roundsWon: z.number(),
-      numPoints: z.number()
+      numPoints: z.number(),
     })
   ),
   roundResults: z.array(
@@ -158,23 +192,27 @@ const riotMatchSchema = z.object({
       bombPlanter: z.string().or(z.null()),
       bombDefuser: z.string().or(z.null()),
       plantRoundTime: z.number(),
-      plantPlayerLocations: z.array(
-        z.object({
-          puuid: z.string(),
-          viewRadians: z.number(),
-          location: z.object({ x: z.number(), y: z.number() })
-        })
-      ).or(z.null()),
+      plantPlayerLocations: z
+        .array(
+          z.object({
+            puuid: z.string(),
+            viewRadians: z.number(),
+            location: z.object({ x: z.number(), y: z.number() }),
+          })
+        )
+        .or(z.null()),
       plantLocation: z.object({ x: z.number(), y: z.number() }),
       plantSite: z.string(),
       defuseRoundTime: z.number(),
-      defusePlayerLocations: z.array(
-        z.object({
-          puuid: z.string(),
-          viewRadians: z.number(),
-          location: z.object({ x: z.number(), y: z.number() })
-        })
-      ).or(z.null()),
+      defusePlayerLocations: z
+        .array(
+          z.object({
+            puuid: z.string(),
+            viewRadians: z.number(),
+            location: z.object({ x: z.number(), y: z.number() }),
+          })
+        )
+        .or(z.null()),
       defuseLocation: z.object({ x: z.number(), y: z.number() }),
       playerStats: z.array(
         z.object({
@@ -191,14 +229,14 @@ const riotMatchSchema = z.object({
                 z.object({
                   puuid: z.string(),
                   viewRadians: z.number(),
-                  location: z.object({ x: z.number(), y: z.number() })
+                  location: z.object({ x: z.number(), y: z.number() }),
                 })
               ),
               finishingDamage: z.object({
                 damageType: z.string(),
                 damageItem: z.string(),
-                isSecondaryFireMode: z.boolean()
-              })
+                isSecondaryFireMode: z.boolean(),
+              }),
             })
           ),
           damage: z.array(
@@ -207,7 +245,7 @@ const riotMatchSchema = z.object({
               damage: z.number(),
               legshots: z.number(),
               bodyshots: z.number(),
-              headshots: z.number()
+              headshots: z.number(),
             })
           ),
           score: z.number(),
@@ -216,17 +254,17 @@ const riotMatchSchema = z.object({
             weapon: z.string(),
             armor: z.string(),
             remaining: z.number(),
-            spent: z.number()
+            spent: z.number(),
           }),
           ability: z.object({
             grenadeEffects: z.null(),
             ability1Effects: z.null(),
             ability2Effects: z.null(),
-            ultimateEffects: z.null()
-          })
+            ultimateEffects: z.null(),
+          }),
         })
       ),
-      roundResultCode: z.string()
+      roundResultCode: z.string(),
     })
-  )
+  ),
 });

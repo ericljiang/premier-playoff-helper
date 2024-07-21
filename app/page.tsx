@@ -68,14 +68,14 @@ export default function Home() {
 
                 const teamAMatchHistoryPromise = getPremierMatchHistory(teamA);
                 const teamBMatchHistoryPromise = getPremierMatchHistory(teamB);
-                const teamAMatchHistory = await teamAMatchHistoryPromise;
-                const teamBMatchHistory = await teamBMatchHistoryPromise;
+                const { matches: teamAMatchHistory, roster: teamARoster } = await teamAMatchHistoryPromise;
+                const { matches: teamBMatchHistory, roster: teamBRoster } = await teamBMatchHistoryPromise;
                 setExpectedMatches(teamAMatchHistory.length + teamBMatchHistory.length);
-                setUnretrievableMatches(0)
+                setUnretrievableMatches(0);
 
                 async function addMatch(matchId: string, team: "a" | "b"): Promise<void> {
                   try {
-                    const stats = await getStats(matchId, team === "a" ? teamA : teamB);
+                    const stats = await getStats(matchId, team === "a" ? teamA : teamB, team === "a" ? teamARoster : teamBRoster);
                     if (team === "a") {
                       setTeamAMatches(prev => [...prev, stats]);
                     } else {
