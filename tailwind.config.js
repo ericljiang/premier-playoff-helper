@@ -9,6 +9,9 @@ module.exports = {
     './node_modules/@nextui-org/react/node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}'
   ],
   theme: {
+    fontFamily: {
+      'display': ['var(--font-display)']
+    },
     extend: {},
   },
   darkMode: "class",

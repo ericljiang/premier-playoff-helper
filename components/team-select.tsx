@@ -39,7 +39,7 @@ export function TeamSelect({ teams, onSelect, isLoading }: TeamSelectProps) {
           </AutocompleteItem>
         ))}
       </Autocomplete>
-      vs
+      <span className="font-display font-semibold">VS</span>
       <Autocomplete
         size={"lg"}
         label="Opponent team"
