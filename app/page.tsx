@@ -98,7 +98,7 @@ export default function Home() {
           </>
         )}
 
-        {expectedMatches && (
+        {expectedMatches && isLoadingStats && (
           <MatchLoadingProgress
             loaded={teamAMatches.length + teamBMatches.length}
             expected={expectedMatches}
