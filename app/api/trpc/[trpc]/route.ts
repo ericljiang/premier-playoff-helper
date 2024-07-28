@@ -16,6 +16,7 @@ function handler(request: Request) {
       );
       console.error(error);
     },
+    allowMethodOverride: true
   });
 }
 

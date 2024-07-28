@@ -7,6 +7,7 @@ const client = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
       url: "/api/trpc",
+      methodOverride: "POST"
     }),
   ],
 });
