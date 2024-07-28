@@ -1,10 +1,11 @@
 "use client"; // https://github.com/nextui-org/nextui/issues/1403
-import { PremierConferences } from "@/valorant-api";
+import { components } from "@/generated/henrik-4.0.0";
+import { ExhaustiveTuple } from "@/util";
 import { Autocomplete, AutocompleteItem, Button } from "@nextui-org/react";
 import { useState } from "react";
 
 type Inputs = {
-  conference: PremierConferences;
+  conference: components["schemas"]["premier_conferences"];
   division: number;
 };
 
@@ -13,22 +14,40 @@ export type DivisionSelectProps = {
   isLoading: boolean
 };
 
-const conferenceNames: Record<PremierConferences, string> = {
-  [PremierConferences.EuCentralEast]: "Central & Eastern Europe",
-  [PremierConferences.EuWest]: "Western Europe",
-  [PremierConferences.EuMiddleEast]: "Middle East",
-  [PremierConferences.EuTurkey]: "Türkiye",
-  [PremierConferences.NaUsEast]: "US East",
-  [PremierConferences.NaUsWest]: "US West",
-  [PremierConferences.LatamNorth]: "Latin America North",
-  [PremierConferences.LatamSouth]: "Latin America South",
-  [PremierConferences.BrBrazil]: "Brazil",
-  [PremierConferences.KrKorea]: "Korea",
-  [PremierConferences.ApAsia]: "Asia",
-  [PremierConferences.ApJapan]: "Japan",
-  [PremierConferences.ApOceania]: "Oceania",
-  [PremierConferences.ApSouthAsia]: "South Asia"
+const conferenceNames: Record<components["schemas"]["premier_conferences"], string> = {
+  EU_CENTRAL_EAST: "Central & Eastern Europe",
+  EU_WEST: "Western Europe",
+  EU_MIDDLE_EAST: "Middle East",
+  EU_TURKEY: "Türkiye",
+  NA_US_EAST: "US East",
+  NA_US_WEST: "US West",
+  LATAM_NORTH: "Latin America North",
+  LATAM_SOUTH: "Latin America South",
+  BR_BRAZIL: "Brazil",
+  KR_KOREA: "Korea",
+  AP_ASIA: "Asia",
+  AP_JAPAN: "Japan",
+  AP_OCEANIA: "Oceania",
+  AP_SOUTH_ASIA: "South Asia"
 }
+
+const _conferences = [
+  "EU_CENTRAL_EAST",
+  "EU_WEST",
+  "EU_MIDDLE_EAST",
+  "EU_TURKEY",
+  "NA_US_EAST",
+  "NA_US_WEST",
+  "LATAM_NORTH",
+  "LATAM_SOUTH",
+  "BR_BRAZIL",
+  "KR_KOREA",
+  "AP_ASIA",
+  "AP_JAPAN",
+  "AP_OCEANIA",
+  "AP_SOUTH_ASIA",
+] as const satisfies readonly components["schemas"]["premier_conferences"][];
+const conferences: ExhaustiveTuple<components["schemas"]["premier_conferences"], typeof _conferences> = _conferences;
 
 const divisionNames = [
   null,
@@ -56,7 +75,7 @@ const divisionNames = [
 ]
 
 export function DivisionSelect({ onSelect, isLoading }: DivisionSelectProps) {
-  const [conference, setConference] = useState<PremierConferences>();
+  const [conference, setConference] = useState<components["schemas"]["premier_conferences"]>();
   const [division, setDivision] = useState<number>();
 
   return (
@@ -67,9 +86,9 @@ export function DivisionSelect({ onSelect, isLoading }: DivisionSelectProps) {
         size={"lg"}
         label="Zone"
         selectedKey={conference ?? null}
-        onSelectionChange={key => setConference(key as PremierConferences)}
+        onSelectionChange={key => setConference(key as components["schemas"]["premier_conferences"])}
       >
-        {Object.values(PremierConferences)
+        {conferences
           .map(conference => (
             <AutocompleteItem key={conference} value={conference}>
               {conferenceNames[conference]}

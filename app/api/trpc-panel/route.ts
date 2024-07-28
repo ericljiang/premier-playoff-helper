@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { renderTrpcPanel } from '@extendslcc/trpc-panel';
-import { appRouter } from '../trpc/[trpc]/route';
+import { appRouter } from '../trpc/[trpc]/router';
 
 
 export async function GET(req: Request) {

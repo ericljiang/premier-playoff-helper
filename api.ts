@@ -1,8 +1,7 @@
-import { PremierConferences } from "./valorant-api";
 import { Match } from "@/app/api/types";
-
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
-import type { AppRouter } from "./app/api/trpc/[trpc]/route";
+import { components } from "./generated/henrik-4.0.0";
+import type { AppRouter } from "./app/api/trpc/[trpc]/router";
 
 const client = createTRPCClient<AppRouter>({
   links: [
@@ -23,7 +22,7 @@ export async function getMatch(matchId: string): Promise<Match> {
 }
 
 export async function getPremierConferenceTrpc(
-  conference: PremierConferences,
+  conference: components["schemas"]["premier_conferences"],
   division: number
 ) {
   return await client.getPremierConference.query({
