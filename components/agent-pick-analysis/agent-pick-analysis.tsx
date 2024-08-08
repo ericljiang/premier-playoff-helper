@@ -10,7 +10,7 @@ export type AgentPickAnalysisProps = {
 };
 
 export function AgentPickAnalysis({ teamCompositions }: AgentPickAnalysisProps) {
-  const [selectedTab, setSelectedTab] = useState<Key>("individual");
+  const [selectedTab, setSelectedTab] = useState<Key>("team");
 
   return (
     <div className="flex w-full flex-col gap-y-3">
@@ -20,8 +20,8 @@ export function AgentPickAnalysis({ teamCompositions }: AgentPickAnalysisProps) 
         selectedKey={selectedTab}
         onSelectionChange={setSelectedTab}
       >
-        <Tab key="individual" title="Individual" />
         <Tab key="team" title="Team" />
+        <Tab key="individual" title="Individual" />
       </Tabs>
       {selectedTab === "individual" && (
         <AgentFrequencyTable teamCompositions={teamCompositions} rowLimit={8} />
