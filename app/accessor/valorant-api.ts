@@ -14,7 +14,10 @@ const mapsSchema = z.object({
   data: z.array(z.object({
     mapUrl: z.string(),
     displayName: z.string(),
-    displayIcon: z.union([z.string(), z.null()]),
+    displayIcon: z.union([z.string(), z.null()]), // basic training and range
+    listViewIcon: z.string(),
+    listViewIconTall: z.union([z.string(), z.null()]),
+    splash: z.string(),
     xMultiplier: z.number(),
     xScalarToAdd: z.number(),
     yMultiplier: z.number(),

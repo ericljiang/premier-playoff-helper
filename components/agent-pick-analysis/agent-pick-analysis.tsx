@@ -5,7 +5,8 @@ import { AgentFrequencyTable } from "./agent-frequency-table";
 import { CompFrequencyTable } from "./comp-frequency-table";
 
 export type AgentPickAnalysisProps = {
-  teamCompositions: Map<string, number>;
+  /** Leave undefined if no data */
+  teamCompositions?: Map<string, number>;
 };
 
 export function AgentPickAnalysis({ teamCompositions }: AgentPickAnalysisProps) {

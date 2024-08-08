@@ -11,11 +11,11 @@ export function AgentFrequencyTable({ teamCompositions, rowLimit }: AgentPickAna
   const agents = useAgents();
   const [showMore, setShowMore] = useState(false);
 
-  const numMatches = Array.from(teamCompositions.entries())
+  const numMatches = Array.from(teamCompositions?.entries() ?? [])
     .map(([, n]) => n)
     .reduce((a, b) => a + b, 0);
 
-  const rows = Array.from(Array.from(teamCompositions.entries())
+  const rows = Array.from(Array.from(teamCompositions?.entries() ?? [])
     .flatMap(([comp, n]) => {
       const agents = z.array(z.string()).parse(JSON.parse(comp));
       return agents.map(agent => [agent, n] as const);
