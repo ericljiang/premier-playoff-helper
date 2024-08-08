@@ -9,11 +9,11 @@ import { AgentPickAnalysisProps } from "./agent-pick-analysis";
 export function CompFrequencyTable({ teamCompositions, rowLimit }: AgentPickAnalysisProps & { rowLimit: number; }) {
   const [showMore, setShowMore] = useState(false);
 
-  const numMatches = Array.from(teamCompositions.entries())
+  const numMatches = Array.from(teamCompositions?.entries() ?? [])
     .map(([, n]) => n)
     .reduce((a, b) => a + b, 0);
 
-  const rows = Array.from(teamCompositions.entries())
+  const rows = Array.from(teamCompositions?.entries() ?? [])
     .sort(([, a], [, b]) => b - a);
 
   return (
